@@ -1,0 +1,7 @@
+[workspace]
+members = [
+	"tbz_hf_va_code",
+	"arp_det",
+	"web",
+	"db",
+]

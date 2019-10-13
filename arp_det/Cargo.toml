@@ -1,0 +1,28 @@
+[package]
+name = "arp_det"
+version = "0.0.1"
+authors = ["Dror Levin <spatz@psybear.com>,Ives Schneider <sec@i-401.xyz>"]
+edition = "2018"
+readme = "README.md"
+license = "GPL-3.0-or-later"
+
+[dependencies]
+c-ares-resolver = "6.1.0"
+chrono = "0.4.9"
+crossbeam-channel = "0.3.9"
+humantime-serde = "0.1.1"
+lazy_static = "1.4.0"
+libc = "0.2.62"
+pcap = "0.7.0"
+pnet = { version = "0.22.0", features = ["serde"] }
+reqwest = "0.9.20"
+serde = { version = "1.0.100", features = ["derive"] }
+snafu = "0.5.0"
+socket2 = "0.3.11"
+structopt = "0.3.1"
+serde_yaml = "0.8.11"
+url = "1.7.2"
+db = { path = "../db" }
+
+[profile.release]
+lto = "thin"

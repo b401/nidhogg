@@ -1,0 +1,11 @@
+{ "mappings":
+    [
+        {
+            "hostname": "Heirloom",
+            "id": "i-0",
+            "ips": ["10.0.0.20"],
+            "name": "Heirloom",
+            "portspec": "Heirloom"
+        }
+    ]
+}

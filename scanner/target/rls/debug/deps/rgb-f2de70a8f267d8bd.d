@@ -1,0 +1,13 @@
+/home/buuky/Repos/nidhogg/scanner/target/rls/debug/deps/rgb-f2de70a8f267d8bd.rmeta: /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/rgb-0.8.14/src/lib.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/rgb-0.8.14/src/internal/convert/mod.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/rgb-0.8.14/src/internal/convert/array.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/rgb-0.8.14/src/internal/convert/tuple.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/rgb-0.8.14/src/internal/ops.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/rgb-0.8.14/src/internal/pixel.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/rgb-0.8.14/src/internal/rgb.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/rgb-0.8.14/src/internal/rgba.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/rgb-0.8.14/src/alt.rs
+
+/home/buuky/Repos/nidhogg/scanner/target/rls/debug/deps/rgb-f2de70a8f267d8bd.d: /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/rgb-0.8.14/src/lib.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/rgb-0.8.14/src/internal/convert/mod.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/rgb-0.8.14/src/internal/convert/array.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/rgb-0.8.14/src/internal/convert/tuple.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/rgb-0.8.14/src/internal/ops.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/rgb-0.8.14/src/internal/pixel.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/rgb-0.8.14/src/internal/rgb.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/rgb-0.8.14/src/internal/rgba.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/rgb-0.8.14/src/alt.rs
+
+/home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/rgb-0.8.14/src/lib.rs:
+/home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/rgb-0.8.14/src/internal/convert/mod.rs:
+/home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/rgb-0.8.14/src/internal/convert/array.rs:
+/home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/rgb-0.8.14/src/internal/convert/tuple.rs:
+/home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/rgb-0.8.14/src/internal/ops.rs:
+/home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/rgb-0.8.14/src/internal/pixel.rs:
+/home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/rgb-0.8.14/src/internal/rgb.rs:
+/home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/rgb-0.8.14/src/internal/rgba.rs:
+/home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/rgb-0.8.14/src/alt.rs:

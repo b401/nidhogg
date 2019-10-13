@@ -1,0 +1,18 @@
+[package]
+name = "nidhogg"
+version = "0.1.0"
+authors = ["b401 <sec@i-401.xyz>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+confy = "0.3.1"
+serde = "1.0.101"
+snmp = "0.2.2"
+snmp-parser = "0.5.2"
+curl = "0.4.25"
+macaddr = "0.1.1"
+arp_det = { path = "../arp_det" }
+web = { path = "../web" }
+scanner = { path = "../scanner" }
