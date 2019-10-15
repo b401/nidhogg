@@ -47,6 +47,7 @@ pub mod snmp {
 
 pub mod rest {
     use curl::easy::{Easy, List};
+    use serde::Serialize;
 
     pub struct Rest {
         token: String,
@@ -65,8 +66,9 @@ pub mod rest {
             }
         }
 
-        pub fn get(&mut self) {
-            self.client.get(true).unwrap();
+        pub fn post(&mut self, content: &str) {
+            self.client.post(true).unwrap();
+            self.client.post_fields_copy(content.as_bytes());
             match self.client.url(&self.url) {
                 Ok(_) => {
                     match self.run() {
