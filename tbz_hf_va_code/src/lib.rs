@@ -46,61 +46,83 @@ pub mod snmp {
 }
 
 pub mod rest {
-    use curl::easy::{Easy, List};
-    use serde::Serialize;
+    use curl::easy::{Easy2, Handler, List, WriteError};
+    use serde::{Deserialize, Serialize};
 
     pub struct Rest {
         token: String,
-        client: Easy,
+        client: Easy2<Collector>,
         pub response: Vec<u8>,
         url: String,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    struct Message {
+        result: SearchResult,
+    }
+
+    #[derive(Serialize, Deserialize)]
+    struct SearchResult {
+        _raw: String,
+        _sourcetype: String,
+        _time: String,
+        _host: String,
+        source: String,
+    }
+
+    enum METHOD {
+        SEARCH(String),
+    }
+
+    struct Collector(Vec<u8>);
+
+    impl Handler for Collector {
+        fn write(&mut self, data: &[u8]) -> Result<usize, WriteError> {
+            self.0.extend_from_slice(data);
+            Ok(data.len())
+        }
     }
 
     impl<'a> Rest {
         pub fn new<'l>(token: &'a str, url: &'l str) -> Rest {
             Rest {
                 token: token.to_owned(),
-                client: Easy::new(),
+                client: Easy2::new(Collector(Vec::new())),
                 response: Default::default(),
                 url: url.to_owned(),
             }
         }
 
-        pub fn post(&mut self, content: &str) {
+        fn post(&mut self, method: METHOD, content: String) {
             self.client.post(true).unwrap();
-            self.client.post_fields_copy(content.as_bytes());
+            let query = content.as_ref();
+            self.client.post_fields_copy(query);
             match self.client.url(&self.url) {
-                Ok(_) => {
-                    match self.run() {
-                        Ok(_) => (),
-                        Err(e) => eprintln!("Error: {}", e),
-                    };
-                }
-                Err(e) => eprintln!("{}", e),
+                Ok(_) => self.run(),
+                Err(_) => eprintln!("Errorr"),
             };
+        }
+
+        pub fn check_sudo(&mut self) {
+            let method = METHOD::SEARCH("/services/search/jobs/export".to_owned());
+            let mut query: String =
+                "search='search source=/var/log/auth.log process=sudo | head 3".to_owned();
+            self.post(method, query);
         }
 
         fn set_oauth(&mut self) {
             let mut list = List::new();
-            let header = format!("Authorization: {}", self.token);
+            let header = format!("Authorization: Bearer {}", self.token);
             list.append(&header).unwrap();
 
             self.client.http_headers(list).unwrap();
         }
 
-        fn run(&mut self) -> Result<(), curl::Error> {
+        fn run(&mut self) {
             self.set_oauth();
-            let mut response = Vec::new();
-            let mut transfer = self.client.transfer();
-
-            transfer
-                .write_function(|new_data| {
-                    response.extend_from_slice(new_data);
-                    Ok(new_data.len())
-                })
-                .unwrap();
-
-            transfer.perform()
+            self.client.perform().unwrap();
+            let response = self.client.get_ref();
+            println!("{}", String::from_utf8_lossy(&response.0));
         }
     }
 }

@@ -16,3 +16,4 @@ macaddr = "0.1.1"
 arp_det = { path = "../arp_det" }
 web = { path = "../web" }
 scanner = { path = "../scanner" }
+serde_json = "1.0.41"
