@@ -34,7 +34,5 @@ fn main() {
     // splunk
     // curl -k -H "Authorization: Bearer eyJfd3e46a31246da7ea7f109e7f95fd" . . .
 
-    let mut rest = Rest::new("http://10.0.0.36:8000/services/jobs/export", "ECJ8Xbn8cvbKq8h0475PNB7Cmr_yaA7Jy7_NttUcdwf9eF7p3JFmLtcCUMeeAHEQxyRYGltm9Tzh4QeFZ6ZtdV69cjaP_UClkKzvZCjW76t6eQyXYSQxoOx");
-
-    rest.post("test");
+    let mut rest = Rest::new("10.0.0.36:8089", "buuky", "duHurWfu21");
 }

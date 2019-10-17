@@ -46,22 +46,26 @@ pub mod snmp {
 }
 
 pub mod rest {
-    use curl::easy::{Easy2, Handler, List, WriteError};
+    use curl::easy::{Auth, Easy2, Handler, List, WriteError};
     use serde::{Deserialize, Serialize};
+    use serde_xml_rs::from_str;
 
+    #[derive(Debug)]
     pub struct Rest {
+        user: String,
+        password: String,
         token: String,
         client: Easy2<Collector>,
         pub response: Vec<u8>,
         url: String,
     }
 
-    #[derive(Serialize, Deserialize)]
+    #[derive(Serialize, Deserialize, Debug)]
     struct Message {
         result: SearchResult,
     }
 
-    #[derive(Serialize, Deserialize)]
+    #[derive(Serialize, Deserialize, Debug)]
     struct SearchResult {
         _raw: String,
         _sourcetype: String,
@@ -70,10 +74,22 @@ pub mod rest {
         source: String,
     }
 
-    enum METHOD {
-        SEARCH(String),
+    enum OUTPUT {
+        SEARCH,
+        AUTH,
     }
 
+    enum METHOD {
+        SEARCH(String),
+        AUTH(String),
+    }
+
+    #[derive(Serialize, Deserialize)]
+    struct response {
+        sessionKey: String,
+    }
+
+    #[derive(Debug)]
     struct Collector(Vec<u8>);
 
     impl Handler for Collector {
@@ -83,46 +99,98 @@ pub mod rest {
         }
     }
 
-    impl<'a> Rest {
-        pub fn new<'l>(token: &'a str, url: &'l str) -> Rest {
-            Rest {
-                token: token.to_owned(),
+    impl<'user, 'pass> Rest {
+        pub fn new<'l>(url: &'l str, user: &'user str, password: &'pass str) -> Rest {
+            let mut Rest = Rest {
+                user: user.to_owned(),
+                password: password.to_owned(),
                 client: Easy2::new(Collector(Vec::new())),
                 response: Default::default(),
-                url: url.to_owned(),
-            }
+                token: Default::default(),
+                url: format!("https://{}", url),
+            };
+            Rest.get_token();
+            Rest
         }
 
-        fn post(&mut self, method: METHOD, content: String) {
+        fn post(&mut self, method: METHOD, content: Vec<String>) {
             self.client.post(true).unwrap();
-            let query = content.as_ref();
-            self.client.post_fields_copy(query);
+            let coll: String = content
+                .iter()
+                .map(|x| {
+                    if content.len() > 1 {
+                        "&".to_owned() + x.as_str()
+                    } else {
+                        x.to_owned()
+                    }
+                })
+                .collect::<String>();
+            self.client.post_fields_copy(coll.as_bytes()).unwrap();
             match self.client.url(&self.url) {
-                Ok(_) => self.run(),
-                Err(_) => eprintln!("Errorr"),
+                Ok(_) => self.run(method),
+                Err(_) => eprintln!("Error"),
+            };
+        }
+
+        fn get(&mut self, url: String) {
+            let method = METHOD::SEARCH("".to_owned());
+            self.client.get(true).unwrap();
+            let new_url = format!("{}{}", self.url, url);
+            match self.client.url(new_url.as_ref()) {
+                Ok(()) => self.run(method),
+                Err(_) => eprintln!("Error"),
             };
         }
 
         pub fn check_sudo(&mut self) {
             let method = METHOD::SEARCH("/services/search/jobs/export".to_owned());
-            let mut query: String =
-                "search='search source=/var/log/auth.log process=sudo | head 3".to_owned();
+            let query =
+                vec!["search='search source=/var/log/auth.log process=sudo | head 3".to_owned()];
             self.post(method, query);
         }
 
-        fn set_oauth(&mut self) {
-            let mut list = List::new();
-            let header = format!("Authorization: Bearer {}", self.token);
-            list.append(&header).unwrap();
-
-            self.client.http_headers(list).unwrap();
+        fn get_token(&mut self) {
+            let method: METHOD = METHOD::AUTH("/services/auth/login".to_owned());
+            let mut query = vec![];
+            query.push(format!("username={}&", self.user));
+            query.push(format!("password={}", self.password));
+            self.post(method, query);
         }
 
-        fn run(&mut self) {
-            self.set_oauth();
+        fn run(&mut self, method: METHOD) {
+            // Can later be changed
+            let output: OUTPUT = match method {
+                METHOD::SEARCH(search_url) => {
+                    self.client
+                        .url(&format!("{}{}", self.url, search_url))
+                        .unwrap();
+                    OUTPUT::SEARCH
+                }
+                METHOD::AUTH(auth_url) => {
+                    self.client
+                        .url(&format!("{}{}", self.url, auth_url))
+                        .unwrap();
+                    OUTPUT::AUTH
+                }
+            };
+            // only on self signed
+            self.client.ssl_verify_peer(false).unwrap();
+            self.client.ssl_verify_host(false).unwrap();
             self.client.perform().unwrap();
+
             let response = self.client.get_ref();
-            println!("{}", String::from_utf8_lossy(&response.0));
+            let new_rsp = String::from_utf8_lossy(&response.0).to_string();
+            self.read_xml(new_rsp, output);
+        }
+
+        fn read_xml(&mut self, response: String, output: OUTPUT) {
+            match output {
+                OUTPUT::AUTH => {
+                    let reader: response = serde_xml_rs::from_str(&response).unwrap();
+                    self.token = reader.sessionKey;
+                }
+                OUTPUT::SEARCH => (),
+            };
         }
     }
 }
