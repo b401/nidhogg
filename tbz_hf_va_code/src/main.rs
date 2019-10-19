@@ -1,6 +1,6 @@
 use arp_det;
-use nidhogg::rest::Rest;
 use nidhogg::snmp;
+use nidhogg::splunk::Rest;
 use std::thread;
 use web;
 
@@ -16,7 +16,7 @@ fn main() {
     //        arp_det::run().expect("Couldn't start arp detection, skipping..");
     //    });
 
-    //    web::run().expect("Could not start webserver");
+    web::run().expect("Could not start webserver");
 
     /*
     let mut sysinfo = snmp::SnmpObject::new("127.0.0.1", "my_comm");
@@ -35,4 +35,12 @@ fn main() {
     // curl -k -H "Authorization: Bearer eyJfd3e46a31246da7ea7f109e7f95fd" . . .
 
     let mut rest = Rest::new("10.0.0.36:8089", "buuky", "duHurWfu21");
+    match rest.check_sudo() {
+        Some(msg) => {
+            println!("{}", msg.result.raw);
+        }
+        None => {
+            println!("everythin ok!");
+        }
+    };
 }

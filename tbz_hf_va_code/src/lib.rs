@@ -45,10 +45,9 @@ pub mod snmp {
     }
 }
 
-pub mod rest {
-    use curl::easy::{Auth, Easy2, Handler, List, WriteError};
+pub mod splunk {
+    use curl::easy::{Easy2, Handler, List, WriteError};
     use serde::{Deserialize, Serialize};
-    use serde_xml_rs::from_str;
 
     #[derive(Debug)]
     pub struct Rest {
@@ -61,19 +60,25 @@ pub mod rest {
     }
 
     #[derive(Serialize, Deserialize, Debug)]
-    struct Message {
-        result: SearchResult,
+    pub struct SearchResult {
+        pub result: result,
     }
 
-    #[derive(Serialize, Deserialize, Debug)]
-    struct SearchResult {
-        _raw: String,
-        _sourcetype: String,
-        _time: String,
-        _host: String,
-        source: String,
+    #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+    pub struct result {
+        #[serde(rename = "_indextime")]
+        pub indextime: String,
+        #[serde(rename = "_raw")]
+        pub raw: String,
+        #[serde(rename = "_sourcetype")]
+        pub sourcetype: String,
+        #[serde(rename = "_time")]
+        pub time: String,
+        pub host: String,
+        pub source: String,
     }
 
+    #[derive(Debug)]
     enum OUTPUT {
         SEARCH,
         AUTH,
@@ -84,9 +89,10 @@ pub mod rest {
         AUTH(String),
     }
 
-    #[derive(Serialize, Deserialize)]
-    struct response {
-        sessionKey: String,
+    #[derive(Serialize, Deserialize, Debug)]
+    struct Response {
+        #[serde(rename = "sessionKey")]
+        SessionKey: String,
     }
 
     #[derive(Debug)]
@@ -94,6 +100,7 @@ pub mod rest {
 
     impl Handler for Collector {
         fn write(&mut self, data: &[u8]) -> Result<usize, WriteError> {
+            self.0.clear();
             self.0.extend_from_slice(data);
             Ok(data.len())
         }
@@ -101,7 +108,7 @@ pub mod rest {
 
     impl<'user, 'pass> Rest {
         pub fn new<'l>(url: &'l str, user: &'user str, password: &'pass str) -> Rest {
-            let mut Rest = Rest {
+            let mut rest = Rest {
                 user: user.to_owned(),
                 password: password.to_owned(),
                 client: Easy2::new(Collector(Vec::new())),
@@ -109,11 +116,11 @@ pub mod rest {
                 token: Default::default(),
                 url: format!("https://{}", url),
             };
-            Rest.get_token();
-            Rest
+            rest.get_token();
+            rest
         }
 
-        fn post(&mut self, method: METHOD, content: Vec<String>) {
+        fn post(&mut self, method: METHOD, content: Vec<String>) -> Option<SearchResult> {
             self.client.post(true).unwrap();
             let coll: String = content
                 .iter()
@@ -126,27 +133,30 @@ pub mod rest {
                 })
                 .collect::<String>();
             self.client.post_fields_copy(coll.as_bytes()).unwrap();
-            match self.client.url(&self.url) {
-                Ok(_) => self.run(method),
-                Err(_) => eprintln!("Error"),
-            };
+            self.run(method)
         }
 
-        fn get(&mut self, url: String) {
-            let method = METHOD::SEARCH("".to_owned());
-            self.client.get(true).unwrap();
-            let new_url = format!("{}{}", self.url, url);
-            match self.client.url(new_url.as_ref()) {
-                Ok(()) => self.run(method),
-                Err(_) => eprintln!("Error"),
-            };
-        }
-
-        pub fn check_sudo(&mut self) {
+        pub fn check_sudo(&mut self) -> Option<SearchResult> {
             let method = METHOD::SEARCH("/services/search/jobs/export".to_owned());
-            let query =
-                vec!["search='search source=/var/log/auth.log process=sudo | head 3".to_owned()];
-            self.post(method, query);
+            let mut query = vec![
+                r#"search=search process="sudo" source="/var/log/auth.log" | head 1"#.to_owned(),
+            ];
+            query.push("output_mode=json".to_owned());
+            self.post(method, query)
+        }
+
+        pub fn check_logins(&mut self) -> Option<SearchResult> {
+            let method = METHOD::SEARCH("/services/search/jobs/export".to_owned());
+            let mut query = vec![r#"search=search source="/var/log/faillog" | head 1"#.to_owned()];
+            query.push("output_mode=json".to_owned());
+            self.post(method, query)
+        }
+
+        fn set_auth_header(&mut self) {
+            let mut list = List::new();
+            let header = format!("Authorization: Bearer {}", self.token);
+            list.append(&header).unwrap();
+            self.client.http_headers(list).unwrap();
         }
 
         fn get_token(&mut self) {
@@ -157,7 +167,11 @@ pub mod rest {
             self.post(method, query);
         }
 
-        fn run(&mut self, method: METHOD) {
+        fn run(&mut self, method: METHOD) -> Option<SearchResult> {
+            if !self.token.is_empty() {
+                println!("Token is not empty");
+                self.set_auth_header();
+            }
             // Can later be changed
             let output: OUTPUT = match method {
                 METHOD::SEARCH(search_url) => {
@@ -173,29 +187,29 @@ pub mod rest {
                     OUTPUT::AUTH
                 }
             };
+
             // only on self signed
             self.client.ssl_verify_peer(false).unwrap();
             self.client.ssl_verify_host(false).unwrap();
             self.client.perform().unwrap();
-
-            let response = self.client.get_ref();
+            let response = self.client.get_mut();
             let new_rsp = String::from_utf8_lossy(&response.0).to_string();
-            self.read_xml(new_rsp, output);
+            &self.client.reset();
+            self.read_response(new_rsp, output)
         }
 
-        fn read_xml(&mut self, response: String, output: OUTPUT) {
+        fn read_response(&mut self, response: String, output: OUTPUT) -> Option<SearchResult> {
             match output {
                 OUTPUT::AUTH => {
-                    let reader: response = serde_xml_rs::from_str(&response).unwrap();
-                    self.token = reader.sessionKey;
+                    let reader: Response = serde_xml_rs::from_str(&response).unwrap();
+                    self.token = reader.SessionKey;
+                    None
                 }
-                OUTPUT::SEARCH => (),
-            };
+                OUTPUT::SEARCH => {
+                    let reader: SearchResult = serde_json::from_str(&response).unwrap();
+                    Some(reader)
+                }
+            }
         }
     }
-}
-
-#[allow(dead_code)]
-fn run() {
-    loop {}
 }
