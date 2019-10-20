@@ -1,3 +1,0 @@
-cargo:rustc-link-search=native=/usr/lib
-cargo:rustc-link-lib=curl
-cargo:include=/usr/include
