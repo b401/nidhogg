@@ -4,5 +4,8 @@ members = [
 	"arp_det",
 	"web",
 	"db",
-	"algorithm"
+	"algorithm",
+	"splunk",
+	"config",
+	"snmp"
 ]

@@ -1,4 +1,4 @@
-use crate::config::NetworkAddresses;
+use config::NetworkAddresses;
 use pnet::{
     packet::{
         arp::{ArpHardwareTypes, ArpOperations, ArpPacket, MutableArpPacket},

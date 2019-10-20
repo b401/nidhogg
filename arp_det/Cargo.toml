@@ -23,6 +23,5 @@ structopt = "0.3.1"
 serde_yaml = "0.8.11"
 url = "1.7.2"
 db = { path = "../db" }
-
-[profile.release]
-lto = "thin"
+algorithm = { path = "../algorithm" }
+config = { path = "../config" }

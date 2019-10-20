@@ -1,19 +1,19 @@
 #[macro_use]
 extern crate tera;
 
-use actix_files::NamedFile;
-use actix_web::{error, get, web, App, Error, HttpResponse, HttpServer, Result};
+use actix_web::{get, web, App, Error, HttpResponse, HttpServer, Result};
+use algorithm;
+use config;
 use db;
-use scanner;
-use std::path::PathBuf;
 
 /// #Sensor
 /// Report down sensors
 /// Url: ${hostname}/network
-#[get("/sensor/{service}")]
-fn down(service: web::Path<String>) -> Result<String> {
-    println!("Sensor {} down!", service);
-    Ok(format!("Sensor: {} is down!", service))
+#[get("/sensor/{host}/{sensor}/{state}")]
+fn sensor(path: web::Path<algorithm::Prtg>, Data: web::Data<Data>) -> Result<String> {
+    println!("Got somethin new!");
+    algorithm::sensor_down(&*path, Data.splunk.clone(), Data.mail.clone());
+    Ok(format!(""))
 }
 
 /// #Index
@@ -35,22 +35,10 @@ fn index(tmpl: web::Data<Data>) -> Result<HttpResponse> {
 fn arp(data: web::Data<Data>) -> HttpResponse {
     match data.db.get_entry() {
         Some(arp) => {
-            data.db.remove_entry();
+            data.db.remove_entry().unwrap();
             HttpResponse::Ok().json(arp)
         }
         None => HttpResponse::NoContent().finish(),
-    }
-}
-
-/// #/scan
-/// Path to get current nmap results
-/// Url: ${hostname}/scan
-#[get("/scan")]
-fn scan() -> HttpResponse {
-    let scan = scanner::scanner::run();
-    match scan {
-        Ok(output) => HttpResponse::Ok().json(output),
-        Err(_) => HttpResponse::from_error(error::ErrorInternalServerError("NMAP installed?")),
     }
 }
 
@@ -69,32 +57,43 @@ fn test(tmpl: web::Data<Data>) -> Result<HttpResponse, Error> {
 struct Data {
     tera: tera::Tera,
     db: db::DBC,
+    splunk: std::sync::Arc<config::Splunk>,
+    mail: std::sync::Arc<config::Mail>,
 }
 
 impl Data {
-    fn new(tera: tera::Tera) -> Data {
+    fn new(
+        tera: tera::Tera,
+        splunk: std::sync::Arc<config::Splunk>,
+        mail: std::sync::Arc<config::Mail>,
+    ) -> Data {
         Data {
             tera,
             db: db::DBC::new("/tmp/arp.db"),
+            splunk,
+            mail,
         }
     }
 }
 
-pub fn run() -> std::io::Result<()> {
-    println!("Starting webserver on 8080");
+pub fn run(
+    config: config::Webserver,
+    splunk: std::sync::Arc<config::Splunk>,
+    mail: std::sync::Arc<config::Mail>,
+) -> std::io::Result<()> {
+    println!("Starting webserver on {}:{}", config.address, config.port);
     println!("Mounting: {}", env!("CARGO_MANIFEST_DIR"));
-    HttpServer::new(|| {
+    HttpServer::new(move || {
         let tera = compile_templates!(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/**/*"));
-        let data = Data::new(tera);
-
+        let data = Data::new(tera, splunk.clone(), mail.clone());
         App::new()
             .data(data)
             .service(actix_files::Files::new("/static", "./static").show_files_listing())
+            .service(sensor)
             .service(index)
             .service(test)
             .service(arp)
-            .service(scan)
     })
-    .bind("0.0.0.0:8080")?
+    .bind(&format!("{}:{}", config.address, config.port))?
     .run()
 }

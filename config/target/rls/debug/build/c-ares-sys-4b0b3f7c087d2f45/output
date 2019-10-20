@@ -1,0 +1,4 @@
+cargo:rerun-if-changed=build.rs
+cargo:rerun-if-changed=c-ares
+cargo:rustc-link-search=native=/usr/lib
+cargo:rustc-link-lib=cares

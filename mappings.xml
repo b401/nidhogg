@@ -1,11 +1,18 @@
 { "mappings":
     [
         {
-            "hostname": "Heirloom",
+            "hostname": "artoria",
             "id": "i-0",
-            "ips": ["10.0.0.20"],
-            "name": "Heirloom",
-            "portspec": "Heirloom"
+            "ips": ["10.0.0.33"],
+            "name": "artoria",
+            "portspec": "artoria"
+        },
+        {
+            "hostname": "splunk",
+            "id": "i-1",
+            "ips": ["10.0.0.36"],
+            "name": "splunk",
+            "portspec": "splunk"
         }
     ]
 }

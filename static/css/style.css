@@ -4,7 +4,7 @@ body {
 
 
 #background {
-    background: url("../images/bg3.png");
+    background: url("../images/bg2.jpg");
     position: fixed;
     top: 0;
     left: 0;
@@ -13,6 +13,7 @@ body {
     background-repeat: no-repeat;
     opacity: 0.4;
     z-index:-1;
+    background-size: cover;
 }
 
 
@@ -32,6 +33,10 @@ span#footspan{
     position: absolute;
     bottom: 0;
     margin-bottom: 2em;
+}
+
+.nav-pills {
+    background-color: #888c91 !important;
 }
 
 .tab-content {

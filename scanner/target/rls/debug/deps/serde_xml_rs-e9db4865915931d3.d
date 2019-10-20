@@ -1,0 +1,12 @@
+/home/buuky/Repos/nidhogg/scanner/target/rls/debug/deps/serde_xml_rs-e9db4865915931d3.rmeta: /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-xml-rs-0.3.1/src/lib.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-xml-rs-0.3.1/src/error.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-xml-rs-0.3.1/src/de/mod.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-xml-rs-0.3.1/src/de/map.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-xml-rs-0.3.1/src/de/seq.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-xml-rs-0.3.1/src/de/var.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-xml-rs-0.3.1/src/ser/mod.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-xml-rs-0.3.1/src/ser/var.rs
+
+/home/buuky/Repos/nidhogg/scanner/target/rls/debug/deps/serde_xml_rs-e9db4865915931d3.d: /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-xml-rs-0.3.1/src/lib.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-xml-rs-0.3.1/src/error.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-xml-rs-0.3.1/src/de/mod.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-xml-rs-0.3.1/src/de/map.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-xml-rs-0.3.1/src/de/seq.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-xml-rs-0.3.1/src/de/var.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-xml-rs-0.3.1/src/ser/mod.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-xml-rs-0.3.1/src/ser/var.rs
+
+/home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-xml-rs-0.3.1/src/lib.rs:
+/home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-xml-rs-0.3.1/src/error.rs:
+/home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-xml-rs-0.3.1/src/de/mod.rs:
+/home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-xml-rs-0.3.1/src/de/map.rs:
+/home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-xml-rs-0.3.1/src/de/seq.rs:
+/home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-xml-rs-0.3.1/src/de/var.rs:
+/home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-xml-rs-0.3.1/src/ser/mod.rs:
+/home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/serde-xml-rs-0.3.1/src/ser/var.rs:

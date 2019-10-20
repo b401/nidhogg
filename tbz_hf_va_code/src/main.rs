@@ -1,46 +1,38 @@
+use algorithm;
 use arp_det;
-use nidhogg::snmp;
-use nidhogg::splunk::Rest;
+use config;
+use std::sync::Arc;
 use std::thread;
 use web;
 
 fn main() {
-    /*
-    match arp_det::run() {
-        Ok(_) => (),
-        Err(_) => eprintln!("Can't detect arp changes"),
-    };
-    */
+    let settings = config::Config::from_file("config.yaml").unwrap();
 
-    //    thread::spawn(|| {
-    //        arp_det::run().expect("Couldn't start arp detection, skipping..");
-    //    });
+    let mail = Arc::new(settings.mail);
+    // Start arp scanner
+    {
+        let arpscan = settings.arpscan;
+        let interface = settings.interface;
+        let new_mail = mail.clone();
+        thread::spawn(move || {
+            match arp_det::run((&arpscan, &interface), new_mail) {
+                Ok(_) => (),
+                Err(e) => eprintln!("{}", e),
+            };
+        });
+    }
 
-    web::run().expect("Could not start webserver");
-
-    /*
-    let mut sysinfo = snmp::SnmpObject::new("127.0.0.1", "my_comm");
-    match sysinfo.get("1.0.2.3.5.1.2.3") {
-        Ok(o) => println!("{}", o),
-        Err(e) => eprintln!("{:?}", e),
-    };
-
-    match scanner::run() {
-        Some(output) => println!("{}", output),
-        None => (),
-    };
-    */
-
-    // splunk
-    // curl -k -H "Authorization: Bearer eyJfd3e46a31246da7ea7f109e7f95fd" . . .
-
-    let mut rest = Rest::new("10.0.0.36:8089", "buuky", "duHurWfu21");
-    match rest.check_sudo() {
-        Some(msg) => {
-            println!("{}", msg.result.raw);
-        }
-        None => {
-            println!("everythin ok!");
-        }
-    };
+    let splunki = Arc::new(settings.splunk);
+    // start splunk checker
+    {
+        let new_splunk = splunki.clone();
+        let new_mail = mail.clone();
+        thread::spawn(move || {
+            algorithm::splunk_check(new_splunk, new_mail);
+        });
+    }
+    // start 5min scanner
+    algorithm::scan(settings.portscan, mail.clone());
+    // Start webserver
+    web::run(settings.webserver, splunki, mail).expect("Could not start webserver");
 }

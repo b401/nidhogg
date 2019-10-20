@@ -13,3 +13,5 @@ tera = "0.11.20"
 arp_det = { path = "../arp_det" }
 db = { path = "../db" }
 scanner = { path = "../scanner" }
+algorithm = { path = "../algorithm" }
+config = { path = "../config" }

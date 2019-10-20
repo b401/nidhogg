@@ -1,0 +1,1 @@
+{"rustc":13143262331899066902,"features":"[\"thread_local\", \"tls\"]","target":834426983540721933,"profile":14672114853574311971,"path":14134325963795320025,"deps":[[13267824064510070099,"thread_local",false,16794706879703027939]],"local":[{"Precalculated":"0.4.1"}],"rustflags":[],"metadata":16107968714384610839}

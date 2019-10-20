@@ -1,14 +1,14 @@
 //use c_ares_resolver::Resolver;
+use chrono;
 use config::NetworkAddresses;
 use crossbeam_channel::{never, select};
 use db;
 use network::Event;
 use pnet::util::MacAddr;
-use std::collections::{hash_map, HashMap};
+use std::collections::HashMap;
 use std::path::PathBuf;
-use structopt::StructOpt;
+//use structopt::StructOpt;
 
-mod config;
 mod error;
 mod network;
 
@@ -69,24 +69,29 @@ impl Queue {
     }
 }
 
-pub struct Inddex {
-    interface_name: String,
-    mac: Vec<MacAddr>,
-    network_addresses: NetworkAddresses,
+pub struct Inddex<'interface> {
+    interface_name: &'interface String,
+    mac: &'interface Vec<MacAddr>,
+    network_addresses: &'interface NetworkAddresses,
     socket: network::Socket,
     online: HashMap<MacAddr, Tracking>,
     pub queue: db::DBC,
+    mail: std::sync::Arc<config::Mail>,
 }
 
-impl Inddex {
-    fn new(config: config::Config) -> Result<Self> {
+impl<'interface> Inddex<'interface> {
+    fn new(
+        config: &'interface (&config::Arpscan, &config::Interface),
+        mail: std::sync::Arc<config::Mail>,
+    ) -> Result<Self> {
         Ok(Self {
-            interface_name: config.interface.name,
-            mac: config.mac,
-            network_addresses: config.interface.addresses,
-            socket: network::Socket::new(config.interface.index)?,
+            interface_name: &config.1.name,
+            mac: &config.0.mac,
+            network_addresses: &config.1.addresses,
+            socket: network::Socket::new(config.1.index)?,
             online: HashMap::new(),
-            queue: db::DBC::new(&config.db),
+            queue: db::DBC::new(&config.0.db),
+            mail: mail,
         })
     }
 
@@ -173,45 +178,29 @@ impl Inddex {
         }
     }
 
-    /*
-    fn handle_event(&mut self, event: Event) {
-        match event {
-            Event::Connected(mac) => {
-                if !self.mac.contains(&mac) {
-                    self.notify(mac);
-                }
-            }
-            Event::Alive { mac, ip } => {
-                if !self.mac.contains(&mac) {
-                    println!("Unknown Mac: {}", mac);
-                    match self.online.entry(mac) {
-                        hash_map::Entry::Occupied(mut occupied) => {
-                            occupied.get_mut().outstanding = 0
-                        }
-                        hash_map::Entry::Vacant(vacant) => {
-                            vacant.insert(Tracking { ip, outstanding: 0 });
-                        }
-                    }
-                }
-            }
-            Event::Ignored => (),
-        }
-    }
-            */
-
     // WICHTIG!!!
     fn notify(&mut self, mac: MacAddr) {
+        let msg = format!("[{}] New device found: {}", current_time(), mac);
+        let subject = format!("ARP NOTIFY!");
+        algorithm::send_mail(self.mail.clone(), &msg, &subject).unwrap();
         match self.queue.insert_entry(&mac.to_string()) {
-            Ok(_) => println!("Found new device: {}", mac),
+            Ok(_) => println!("New mac"),
             Err(e) => println!("Error: {}", e),
         }
     }
 }
 
-pub fn run() -> Result<()> {
+pub fn current_time() -> String {
+    use chrono::{DateTime, Utc};
+    let now: DateTime<Utc> = Utc::now();
+    format!("[{}]", now.format("%b %e %T"))
+}
+
+pub fn run(
+    config: (&config::Arpscan, &config::Interface),
+    mail: std::sync::Arc<config::Mail>,
+) -> Result<()> {
     println!("Starting arp detection");
-    let opt = Opt::from_args();
-    let config = config::Config::from_file(opt.config_file)?;
-    let mut inddex = Inddex::new(config)?;
+    let mut inddex = Inddex::new(&config, mail)?;
     inddex.run()
 }

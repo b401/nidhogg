@@ -1,0 +1,26 @@
+[package]
+name = "config"
+version = "0.1.0"
+authors = ["b401 <sec@i-401.xyz>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+c-ares-resolver = "6.1.0"
+chrono = "0.4.9"
+crossbeam-channel = "0.3.9"
+humantime-serde = "0.1.1"
+lazy_static = "1.4.0"
+libc = "0.2.62"
+pcap = "0.7.0"
+pnet = { version = "0.22.0", features = ["serde"] }
+reqwest = "0.9.20"
+serde = { version = "1.0.100", features = ["derive"] }
+snafu = "0.5.0"
+socket2 = "0.3.11"
+structopt = "0.3.1"
+serde_yaml = "0.8.11"
+url = "1.7.2"
+db = { path = "../db" }
+state = { version = "0.4.1", features = ["tls"] }

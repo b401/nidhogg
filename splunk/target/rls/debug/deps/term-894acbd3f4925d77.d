@@ -1,0 +1,12 @@
+/home/buuky/Repos/nidhogg/splunk/target/rls/debug/deps/term-894acbd3f4925d77.rmeta: /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/term-0.4.6/src/lib.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/term-0.4.6/src/terminfo/mod.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/term-0.4.6/src/terminfo/searcher.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/term-0.4.6/src/terminfo/parser/compiled.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/term-0.4.6/src/terminfo/parser/names.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/term-0.4.6/src/terminfo/parm.rs
+
+/home/buuky/Repos/nidhogg/splunk/target/rls/debug/deps/libterm-894acbd3f4925d77.rlib: /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/term-0.4.6/src/lib.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/term-0.4.6/src/terminfo/mod.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/term-0.4.6/src/terminfo/searcher.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/term-0.4.6/src/terminfo/parser/compiled.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/term-0.4.6/src/terminfo/parser/names.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/term-0.4.6/src/terminfo/parm.rs
+
+/home/buuky/Repos/nidhogg/splunk/target/rls/debug/deps/term-894acbd3f4925d77.d: /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/term-0.4.6/src/lib.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/term-0.4.6/src/terminfo/mod.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/term-0.4.6/src/terminfo/searcher.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/term-0.4.6/src/terminfo/parser/compiled.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/term-0.4.6/src/terminfo/parser/names.rs /home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/term-0.4.6/src/terminfo/parm.rs
+
+/home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/term-0.4.6/src/lib.rs:
+/home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/term-0.4.6/src/terminfo/mod.rs:
+/home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/term-0.4.6/src/terminfo/searcher.rs:
+/home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/term-0.4.6/src/terminfo/parser/compiled.rs:
+/home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/term-0.4.6/src/terminfo/parser/names.rs:
+/home/buuky/.cargo/registry/src/github.com-1ecc6299db9ec823/term-0.4.6/src/terminfo/parm.rs:

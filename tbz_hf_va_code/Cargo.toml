@@ -7,14 +7,8 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-confy = "0.3.1"
-serde = "1.0.101"
-snmp = "0.2.2"
-snmp-parser = "0.5.2"
-curl = "0.4.25"
-macaddr = "0.1.1"
 arp_det = { path = "../arp_det" }
 web = { path = "../web" }
 scanner = { path = "../scanner" }
-serde_json = "1.0.41"
-serde-xml-rs = "0.3.1"
+algorithm = { path = "../algorithm" }
+config = {path = "../config"}
