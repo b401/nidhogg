@@ -6,7 +6,7 @@ use std::thread;
 use web;
 
 fn main() {
-    let settings = config::Config::from_file("config.yaml").unwrap();
+    let settings = config::Config::from_file("/etc/nidhogg/config.yml").unwrap();
 
     let mail = Arc::new(settings.mail);
     // Start arp scanner
