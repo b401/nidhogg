@@ -73,10 +73,8 @@ pub fn run(host: Option<&String>) -> Result<Option<ScanResult>> {
     use std::fs::File;
     use std::io::BufWriter;
     use std::io::Write;
-    let portspecs =
-        PortSpecs::from_file("/etc/nidhogg/portspecs.yml").expect("Failed to load portspec file");
-    let mappings =
-        Mapping::from_file("/etc/nidhogg/mappings.xml").expect("Failed to load mapping file");
+    let portspecs = PortSpecs::from_file("portspecs.yml").expect("Failed to load portspec file");
+    let mappings = Mapping::from_file("mappings.xml").expect("Failed to load mapping file");
 
     let dst_host: String = match host {
         Some(dns) => dns.to_owned(),

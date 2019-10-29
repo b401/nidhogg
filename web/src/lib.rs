@@ -84,14 +84,11 @@ pub fn run(
     println!("Starting webserver on {}:{}", config.address, config.port);
     println!("Mounting: {}", env!("CARGO_MANIFEST_DIR"));
     HttpServer::new(move || {
-        let tera = compile_templates!(&format!("/etc/nidhogg/templates/**/*"));
+        let tera = compile_templates!(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/**/*"));
         let data = Data::new(tera, splunk.clone(), mail.clone());
         App::new()
             .data(data)
-            .service(
-                actix_files::Files::new("/etc/nidhogg/static", "/etc/nidhogg/static")
-                    .show_files_listing(),
-            )
+            .service(actix_files::Files::new("/static", "./static").show_files_listing())
             .service(sensor)
             .service(index)
             .service(test)

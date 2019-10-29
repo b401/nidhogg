@@ -1,3 +1,4 @@
+//use c_ares_resolver::Resolver;
 use chrono;
 use config::NetworkAddresses;
 use crossbeam_channel::{never, select};
@@ -6,6 +7,7 @@ use network::Event;
 use pnet::util::MacAddr;
 use std::collections::HashMap;
 use std::path::PathBuf;
+//use structopt::StructOpt;
 
 mod error;
 mod network;
@@ -15,7 +17,7 @@ const TICK_SECS: u32 = 20;
 #[derive(Debug, structopt::StructOpt)]
 #[structopt(about)]
 struct Opt {
-    #[structopt(long, default_value = "/etc/nidhogg/config.yml")]
+    #[structopt(long, default_value = "config.yaml")]
     config_file: PathBuf,
 }
 
