@@ -49,7 +49,7 @@ impl DBC {
             addresses.push(mac.unwrap());
         }
 
-        if !addresses.is_empty() {
+        if addresses.len() != 0 {
             Some(addresses)
         } else {
             None

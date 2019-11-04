@@ -1,3 +1,4 @@
+use chrono::NaiveTime;
 use pnet::util::MacAddr;
 use serde::Deserialize;
 use snafu::ResultExt;
@@ -35,7 +36,7 @@ pub struct Splunk {
 #[derive(Deserialize, Debug)]
 pub struct Snmp {
     pub enable: bool,
-    pub server: Vec<String>,
+    pub server: String,
     pub community: String,
     pub oid: String,
 }

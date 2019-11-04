@@ -3,35 +3,41 @@ use serde::{Deserialize, Serialize};
 extern crate enum_derive;
 #[macro_use]
 extern crate custom_derive;
-use log::{error, warn};
+use log::{error, info, warn};
+#[macro_use]
+extern crate systemd;
 use chrono;
 use config;
-use lettre::smtp::{authentication, SmtpClient};
-use lettre::Transport;
+use lettre::smtp::{authentication, ClientSecurity, SmtpClient};
+use lettre::{SmtpTransport, Transport};
 use lettre_email::EmailBuilder;
 use scanner;
 use splunk;
-use std::thread;
+use std::{thread, time};
+use systemd::journal;
+
+// testing
+use std::env;
 
 custom_derive! {
     #[derive(EnumFromStr, Debug)]
     enum State {
-        Up,
-        Down,
-        Critical,
-        Unknown,
+        up,
+        down,
+        critical,
+        unknown,
     }
 }
 
 custom_derive! {
     #[derive(EnumFromStr, Debug)]
     enum Sensor {
-        Network,
-        Ping,
-        Load,
-        Memory,
-        Disk,
-        Unknown,
+        network,
+        ping,
+        load,
+        memory,
+        disk,
+        unknown,
     }
 }
 
@@ -42,15 +48,27 @@ pub struct Prtg {
     pub state: String,
 }
 
+struct Config {
+    email: String,
+}
+
+impl Config {
+    fn new() -> Self {
+        Config {
+            email: "sec@i-401.xyz".to_owned(),
+        }
+    }
+}
+
 pub fn sensor_down(
     info: &Prtg,
     splunk: Option<std::sync::Arc<config::Splunk>>,
-    mail: Option<std::sync::Arc<config::Mail>>,
+    mail: std::sync::Arc<config::Mail>,
 ) {
-    let sensor: Sensor = info.sensor.parse().unwrap_or(Sensor::Unknown);
+    let sensor: Sensor = info.sensor.parse().unwrap_or(Sensor::unknown);
     match sensor {
         // network
-        Sensor::Network | Sensor::Ping => {
+        Sensor::network | Sensor::ping => {
             let mut msg = format!(
                 "Host: {} changed sensor: {} to state: {}\nPlease investigate!\n\n",
                 info.host, info.sensor, info.state
@@ -62,23 +80,21 @@ pub fn sensor_down(
                 Ok(res) => {
                     msg = match res {
                         Some(scan_result) => format!("{}\n{}", msg, scan_result),
-                        None => msg.to_string(),
+                        None => format!("{}", msg),
                     };
-                    if let Some(new_mail) = mail {
-                        send_mail(new_mail, &msg, &format!("{}: {}", info.host, info.sensor)).unwrap();
-                    };
+                    send_mail(mail, &msg, &format!("{}: {}", info.host, info.sensor)).unwrap();
                 }
                 Err(e) => println!("Error: {}", e),
             };
         }
         // Host
-        Sensor::Disk | Sensor::Load | Sensor::Memory => {
+        Sensor::disk | Sensor::load | Sensor::memory => {
             let msg = match splunk{
                 Some(spl) => {
                     let mut rest = splunk::Rest::new(&spl.server, &spl.username, &spl.password);
                     match rest.check_sudo(&info.host) {
                         Some(splunk_result) => format!("\n\nLast Splunk messages:\n{}", splunk_result),
-                        None => "\n\nLast Splunk messages:\n Host not found or no logs".to_string(),
+                        None => format!("\n\nLast Splunk messages:\n Host not found or no logs"),
                     }
                 },
                 None => String::new()
@@ -88,12 +104,10 @@ pub fn sensor_down(
                 "Host: {} , Sensor: {}, State: {}",
                 info.host, info.state, info.sensor
             );
-            if let Some(new_mail) = mail {
-                send_mail(new_mail,&format!("Host: {} changed sensor: {} to state: {}\nPlease investigate!{}",info.host,info.sensor,info.state,msg), &format!("{}: {}", info.host, info.sensor)).unwrap();
-            };
+            send_mail(mail,&format!("Host: {} changed sensor: {} to state: {}\nPlease investigate!{}",info.host,info.sensor,info.state,msg), &format!("{}: {}", info.host, info.sensor)).unwrap();
         }
         // Unknown
-        Sensor::Unknown => {
+        Sensor::unknown => {
             error!(
                 "[Unknown] Host: {} , Sensor: {}, State: {}",
                 info.host, info.state, info.sensor
@@ -104,8 +118,8 @@ pub fn sensor_down(
 
 pub fn send_mail(
     mail: std::sync::Arc<config::Mail>,
-    msg: &str,
-    subject: &str,
+    msg: &String,
+    subject: &String,
 ) -> Result<(), lettre::smtp::error::Error> {
     // to remove
     let mail = mail.clone();
@@ -122,10 +136,7 @@ pub fn send_mail(
         .credentials(authentication)
         .authentication_mechanism(authentication::Mechanism::Plain)
         .transport();
-    match client.send(email.into()) {
-        Ok(_) => eprintln!("Sent mail"),
-        Err(_) => println!("Could not send mail to endpoint")
-    }
+    client.send(email.into());
     Ok(())
 }
 
@@ -135,25 +146,25 @@ pub fn current_time() -> String {
     format!("[{}]", now.format("%b %e %T"))
 }
 
-pub fn splunk_check(config: std::sync::Arc<config::Splunk>, mail: Option<std::sync::Arc<config::Mail>>) {
+pub fn splunk_check(config: std::sync::Arc<config::Splunk>, mail: std::sync::Arc<config::Mail>) {
     let mut rest = splunk::Rest::new(&config.server, &config.username, &config.password);
     thread::spawn(move || loop {
         thread::sleep(std::time::Duration::from_secs(config.interval));
-        let ret = rest.check_sudo(&"*".to_owned());
-        if let Some(ret) = ret {
-                if let Some(new_mail) = &mail {
-                    send_mail(
-                        new_mail.clone(),
-                        &format!("Splunk Messages:\n,{}", ret),
-                        &"Automated Splunker".to_string(),
-                    )
-                    .unwrap();
-                };
+        match rest.check_sudo(&"*".to_owned()) {
+            Some(msg) => {
+                send_mail(
+                    mail.clone(),
+                    &format!("Splunk Messages:\n,{}", msg),
+                    &format!("Automated Splunker"),
+                )
+                .unwrap();
+            }
+            None => (),
         };
     });
 }
 
-pub fn scan(config: config::Portscan, mail: Option<std::sync::Arc<config::Mail>>) {
+pub fn scan(config: config::Portscan, mail: std::sync::Arc<config::Mail>) {
     use nmap_analyze::Mapping;
     use nmap_analyze::*;
 
@@ -170,20 +181,21 @@ pub fn scan(config: config::Portscan, mail: Option<std::sync::Arc<config::Mail>>
         for host in hosts {
             match scanner::run(Some(&host)) {
                 Ok(res) => {
-                    if let Some(scan_result) = res {
-                        if let Some(new_mail) = &mail {
-                                send_mail(
-                                    new_mail.clone(),
-                                    &format!("Time: {} {}", current_time(), scan_result),
-                                    &format!(
-                                        "[Nidhogg] Automated Scanner found anomaly in host {}",
-                                        host
-                                    ),
-                                )
-                                .unwrap();
-                            };
-                        };
-                },
+                    match res {
+                        Some(scan_result) => {
+                            send_mail(
+                                mail.clone(),
+                                &format!("Time: {} {}", current_time(), scan_result),
+                                &format!(
+                                    "[Nidhogg] Automated Scanner found anomaly in host {}",
+                                    host
+                                ),
+                            )
+                            .unwrap();
+                        }
+                        None => (),
+                    };
+                }
                 Err(e) => println!("Error: {}", e),
             };
         }

@@ -52,7 +52,7 @@ enum METHOD {
 #[derive(Serialize, Deserialize, Debug)]
 struct Response {
     #[serde(rename = "sessionKey")]
-    session_key: String,
+    SessionKey: String,
 }
 
 #[derive(Debug)]
@@ -167,14 +167,14 @@ impl<'user, 'pass> Rest {
                     Err(_) => Err(()),
                 };
                 if reader.is_ok() {
-                    self.token = reader.unwrap().session_key;
+                    self.token = reader.unwrap().SessionKey;
                 };
                 None
             }
             OUTPUT::SEARCH => {
                 let reader: Option<SearchResult> = match serde_json::from_str(&response) {
                     Ok(rsp) => Some(rsp),
-                    Err(_) => return None,
+                    Err(e) => return None,
                 };
                 reader
             }

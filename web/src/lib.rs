@@ -13,7 +13,7 @@ use db;
 fn sensor(path: web::Path<algorithm::Prtg>, data: web::Data<Data>) -> Result<String> {
     println!("Got somethin new!");
     algorithm::sensor_down(&*path, data.splunk.clone(), data.mail.clone());
-    Ok("".to_string())
+    Ok(format!(""))
 }
 
 /// #Index
@@ -58,14 +58,14 @@ struct Data {
     tera: tera::Tera,
     db: db::DBC,
     splunk: Option<std::sync::Arc<config::Splunk>>,
-    mail: Option<std::sync::Arc<config::Mail>>,
+    mail: std::sync::Arc<config::Mail>,
 }
 
 impl Data {
     fn new(
         tera: tera::Tera,
         splunk: Option<std::sync::Arc<config::Splunk>>,
-        mail: Option<std::sync::Arc<config::Mail>>,
+        mail: std::sync::Arc<config::Mail>,
     ) -> Data {
         Data {
             tera,
@@ -79,17 +79,13 @@ impl Data {
 pub fn run(
     config: config::Webserver,
     splunk: Option<std::sync::Arc<config::Splunk>>,
-    mail: Option<std::sync::Arc<config::Mail>>,
+    mail: std::sync::Arc<config::Mail>,
 ) -> std::io::Result<()> {
     println!("Starting webserver on {}:{}", config.address, config.port);
     println!("Mounting: {}", env!("CARGO_MANIFEST_DIR"));
     HttpServer::new(move || {
         let tera = compile_templates!(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/**/*"));
-        let data = if let Some(spl) = &splunk {
-            Data::new(tera, Some(spl.clone()), mail.clone())
-        }else {
-            Data::new(tera,None, mail.clone())
-        };
+        let data = Data::new(tera, splunk.clone(), mail.clone());
         App::new()
             .data(data)
             .service(actix_files::Files::new("/static", "./static").show_files_listing())

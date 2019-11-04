@@ -6,6 +6,7 @@ pub struct SnmpObject {
 
 impl SnmpObject {
     pub fn new(ip: String, community: String) -> SnmpObject {
+        dbg!(&ip);
         SnmpObject {
             session: {
                 match SyncSession::new(
