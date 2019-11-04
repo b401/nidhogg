@@ -1,4 +1,3 @@
-use error_chain;
 use nmap_analyze::output::JsonOutput;
 use nmap_analyze::output::{OutputConfig, OutputDetail, OutputFormat};
 use nmap_analyze::*;
@@ -6,7 +5,7 @@ use serde;
 use serde::{Deserialize, Serialize};
 use serde_json;
 use std::fmt;
-use std::process::{exit, Command};
+use std::process::Command;
 use std::str;
 use std::str::FromStr;
 
@@ -70,9 +69,6 @@ pub struct PortResult {
 
 pub fn run(host: Option<&String>) -> Result<Option<ScanResult>> {
     use sedregex::find_and_replace;
-    use std::fs::File;
-    use std::io::BufWriter;
-    use std::io::Write;
     let portspecs = PortSpecs::from_file("portspecs.yml").expect("Failed to load portspec file");
     let mappings = Mapping::from_file("mappings.xml").expect("Failed to load mapping file");
 
@@ -93,7 +89,7 @@ pub fn run(host: Option<&String>) -> Result<Option<ScanResult>> {
         .output()
         .unwrap();
 
-    let mut output = str::from_utf8(&nmap_output.stdout).unwrap();
+    let output = str::from_utf8(&nmap_output.stdout).unwrap();
 
     let content: String = String::from(find_and_replace(output, &["/.*mac.*/d"]).unwrap());
 
