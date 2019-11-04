@@ -3,6 +3,8 @@ portspecs:
     ports:
       - id: 22
         state: open
+      - id: 25
+        state: closed
   - name: splunk
     ports:
       - id: 22

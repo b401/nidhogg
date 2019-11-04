@@ -23,6 +23,7 @@ fn main()  {
             let interface = settings.interface;
             let new_mail = mail.clone();
             thread::spawn(move || {
+                println!("[*] Starting arp scanner");
                 match arp_det::run((&arpscan, &interface), new_mail) {
                     Ok(_) => (),
                     Err(e) => eprintln!("{}", e),
@@ -39,12 +40,14 @@ fn main()  {
         let new_splunk = splunki.clone();
         let new_mail = mail.clone();
         thread::spawn(move || {
+            println!("[*] Starting Splunk scanner");
             algorithm::splunk_check(new_splunk, new_mail);
         });
     }
 
     if settings.portscan.enable {
         // start 5min scanner
+        println!("[*] Starting portscanner");
         algorithm::scan(settings.portscan, mail.clone());
     }
 
@@ -54,7 +57,7 @@ fn main()  {
         } else {
             None
         };
-
+        println!("[*] Starting webserver")
         web::run(settings.webserver, spl_web, mail).expect("Could not start webserver");
     }
 

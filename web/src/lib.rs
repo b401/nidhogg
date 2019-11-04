@@ -81,14 +81,13 @@ pub fn run(
     splunk: Option<std::sync::Arc<config::Splunk>>,
     mail: std::sync::Arc<config::Mail>,
 ) -> std::io::Result<()> {
-    println!("Starting webserver on {}:{}", config.address, config.port);
-    println!("Mounting: {}", env!("CARGO_MANIFEST_DIR"));
+    println!("Starting webserver on {}:{}", config.address, config.port);    
     HttpServer::new(move || {
-        let tera = compile_templates!(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/**/*"));
+        let tera = compile_templates!(concat!("/etc/nidhogg/templates/**/*"));
         let data = Data::new(tera, splunk.clone(), mail.clone());
         App::new()
             .data(data)
-            .service(actix_files::Files::new("/static", "./static").show_files_listing())
+            .service(actix_files::Files::new("/static", "/etc/nidhogg/static").show_files_listing())
             .service(sensor)
             .service(index)
             .service(test)

@@ -1,8 +1,10 @@
 webserver:
+    enable: yes
     address: "0.0.0.0"
     port: "8080"
 
 mail:
+    enable: yes
     server: "smtp.gmail.com"
     username: "user@gmail.com"
     password: ""
@@ -10,23 +12,27 @@ mail:
     from: "user@gmail.com"
 
 splunk:
+    enable: yes
     server: "splunk:8089"
     username: ""
     password: ""
     interval: 500
 
 snmp:
+    enable: yes
     server: "127.0.0.1"
     community: "my_comm"
     oid: "1.3.6.100.1.2.3.5.1.1.0"
 
 portscan:
+    enable: yes
     portspec: "~/Repos/nidhogg/portspecs.yml"
     mappings: "~/Repos/nidhogg/mappings.xml"
     timeout: 500
 
 arpscan:
-    interface: "eno1"
+    enable: yes
+    interface: "ens160"
     db: "/tmp/arp.db"
     timeout: 500
     mac:

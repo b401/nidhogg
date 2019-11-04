@@ -49,14 +49,6 @@ pub struct Queue {
 }
 
 impl Queue {
-    fn new() -> Queue {
-        Queue { mac: Vec::new() }
-    }
-
-    fn set(&mut self, mac: MacAddr) {
-        self.mac.push(mac);
-    }
-
     pub fn get(&self) -> Option<Vec<String>> {
         match self.mac.len() {
             0 => None,

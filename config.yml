@@ -1,8 +1,10 @@
+# Choose on which address and port the webserver should listen
 webserver:
     enable: true
     address: "0.0.0.0"
     port: "8080"
 
+# Enable or disable mail notifications
 mail:
     enable: true
     server: "smtp.gmail.com"
@@ -11,6 +13,7 @@ mail:
     email: "user@i-401.xyz"
     from: "user@gmail.com"
 
+# Set address and login to remote Splunk endpoint (multiple endpoints are possible)    
 splunk:
     enable: true
     server: "splunk:8089"
@@ -18,21 +21,26 @@ splunk:
     password: ""
     interval: 500
 
+# Set remote snmp server address and community + oids.
+# Multiple oids and servers are possible 
 snmp:
     enable: true
     server: "127.0.0.1"
     community: "my_comm"
     oid: "1.3.6.100.1.2.3.5.1.1.0"
 
+# Enable/disable portscanning (requires root rights)
 portscan:
     enable: true
     portspec: "~/Repos/nidhogg/portspecs.yml"
     mappings: "~/Repos/nidhogg/mappings.xml"
     timeout: 500
 
+# Enable/disable arpscanning (requires root rights)
+# Use mac list to whitelist devices. (You won't get notifications if those devices getting connected)    
 arpscan:
     enable: true
-    interface: "eno1"
+    interface: "eno1"    
     db: "/tmp/arp.db"
     timeout: 500
     mac:
