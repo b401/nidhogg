@@ -10,9 +10,9 @@ use db;
 /// Report down sensors
 /// Url: ${hostname}/network
 #[get("/sensor/{host}/{sensor}/{state}")]
-fn sensor(path: web::Path<algorithm::Prtg>, Data: web::Data<Data>) -> Result<String> {
+fn sensor(path: web::Path<algorithm::Prtg>, data: web::Data<Data>) -> Result<String> {
     println!("Got somethin new!");
-    algorithm::sensor_down(&*path, Data.splunk.clone(), Data.mail.clone());
+    algorithm::sensor_down(&*path, data.splunk.clone(), data.mail.clone());
     Ok(format!(""))
 }
 
@@ -57,14 +57,14 @@ fn test(tmpl: web::Data<Data>) -> Result<HttpResponse, Error> {
 struct Data {
     tera: tera::Tera,
     db: db::DBC,
-    splunk: std::sync::Arc<config::Splunk>,
+    splunk: Option<std::sync::Arc<config::Splunk>>,
     mail: std::sync::Arc<config::Mail>,
 }
 
 impl Data {
     fn new(
         tera: tera::Tera,
-        splunk: std::sync::Arc<config::Splunk>,
+        splunk: Option<std::sync::Arc<config::Splunk>>,
         mail: std::sync::Arc<config::Mail>,
     ) -> Data {
         Data {
@@ -78,7 +78,7 @@ impl Data {
 
 pub fn run(
     config: config::Webserver,
-    splunk: std::sync::Arc<config::Splunk>,
+    splunk: Option<std::sync::Arc<config::Splunk>>,
     mail: std::sync::Arc<config::Mail>,
 ) -> std::io::Result<()> {
     println!("Starting webserver on {}:{}", config.address, config.port);

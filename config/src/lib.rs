@@ -7,38 +7,6 @@ use std::path::Path;
 
 mod error;
 
-pub fn deserialize_naivetime<'de, D>(d: D) -> Result<NaiveTime, D::Error>
-where
-    D: serde::de::Deserializer<'de>,
-{
-    struct V;
-
-    impl<'de2> serde::de::Visitor<'de2> for V {
-        type Value = NaiveTime;
-
-        fn expecting(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
-            fmt.write_str("a naive time")
-        }
-
-        fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-        where
-            E: serde::de::Error,
-        {
-            NaiveTime::parse_from_str(v, "%H:%M")
-                .map_err(|_| E::invalid_value(serde::de::Unexpected::Str(v), &self))
-        }
-    }
-
-    d.deserialize_str(V)
-}
-
-#[derive(Debug, Deserialize)]
-pub struct Period {
-    #[serde(deserialize_with = "deserialize_naivetime")]
-    start: NaiveTime,
-    #[serde(deserialize_with = "deserialize_naivetime")]
-    end: NaiveTime,
-}
 
 #[derive(Debug, Deserialize)]
 struct ConfigDevice<'a> {
@@ -58,6 +26,7 @@ struct ConfigData {
 
 #[derive(Deserialize, Debug)]
 pub struct Splunk {
+    pub enable: bool,
     pub server: String,
     pub username: String,
     pub password: String,
@@ -66,6 +35,7 @@ pub struct Splunk {
 
 #[derive(Deserialize, Debug)]
 pub struct Snmp {
+    pub enable: bool,
     pub server: String,
     pub community: String,
     pub oid: String,
@@ -73,6 +43,7 @@ pub struct Snmp {
 
 #[derive(Deserialize, Debug)]
 pub struct Mail {
+    pub enable: bool,
     pub server: String,
     pub username: String,
     pub password: String,
@@ -82,6 +53,7 @@ pub struct Mail {
 
 #[derive(Deserialize, Debug)]
 pub struct Portscan {
+    pub enable: bool,
     pub portspec: std::path::PathBuf,
     pub mappings: std::path::PathBuf,
     pub timeout: u64,
@@ -89,6 +61,7 @@ pub struct Portscan {
 
 #[derive(Deserialize, Debug)]
 pub struct Arpscan {
+    pub enable: bool,
     pub interface: String,
     pub db: String,
     pub mac: Vec<MacAddr>,
@@ -110,6 +83,7 @@ pub struct NetworkAddresses {
 
 #[derive(Debug, Deserialize)]
 pub struct Webserver {
+    pub enable: bool,
     pub address: Ipv4Addr,
     pub port: String,
 }

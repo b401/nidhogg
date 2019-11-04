@@ -62,10 +62,9 @@ impl Config {
 
 pub fn sensor_down(
     info: &Prtg,
-    splunk: std::sync::Arc<config::Splunk>,
+    splunk: Option<std::sync::Arc<config::Splunk>>,
     mail: std::sync::Arc<config::Mail>,
 ) {
-    let mut rest = splunk::Rest::new(&splunk.server, &splunk.username, &splunk.password);
     let sensor: Sensor = info.sensor.parse().unwrap_or(Sensor::unknown);
     match sensor {
         // network
@@ -90,15 +89,22 @@ pub fn sensor_down(
         }
         // Host
         Sensor::disk | Sensor::load | Sensor::memory => {
-            let msg = match rest.check_sudo(&info.host) {
-                Some(splunk_result) => format!("{}", splunk_result),
-                None => format!("Host not found or no logs"),
+            let msg = match splunk{
+                Some(spl) => {
+                    let mut rest = splunk::Rest::new(&spl.server, &spl.username, &spl.password);
+                    match rest.check_sudo(&info.host) {
+                        Some(splunk_result) => format!("\n\nLast Splunk messages:\n{}", splunk_result),
+                        None => format!("\n\nLast Splunk messages:\n Host not found or no logs"),
+                    }
+                },
+                None => String::new()
             };
+
             warn!(
                 "Host: {} , Sensor: {}, State: {}",
                 info.host, info.state, info.sensor
             );
-            send_mail(mail,&format!("Host: {} changed sensor: {} to state: {}\nPlease investigate!\n\nLast Splunk messages:\n{}",info.host,info.sensor,info.state,msg), &format!("{}: {}", info.host, info.sensor)).unwrap();
+            send_mail(mail,&format!("Host: {} changed sensor: {} to state: {}\nPlease investigate!{}",info.host,info.sensor,info.state,msg), &format!("{}: {}", info.host, info.sensor)).unwrap();
         }
         // Unknown
         Sensor::unknown => {
