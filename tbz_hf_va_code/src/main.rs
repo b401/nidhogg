@@ -3,10 +3,18 @@ use arp_det;
 use config;
 use std::sync::Arc;
 use std::thread;
+use std::process::exit;
 use web;
 
-fn main() -> Result<(),std::boxed::Box<dyn std::error::Error>> {
-    let settings = config::Config::from_file("/etc/nidhogg/config.yml")?;
+fn main()  {
+    let settings = match config::Config::from_file("/etc/nidhogg/config.yml") {
+        Ok(setting) => setting,
+        Err(e) => {
+            println!("{}",e);
+            exit(1);
+        }
+    };
+
     let mail = Arc::new(settings.mail);
     if settings.arpscan.enable {
     // Start arp scanner
@@ -23,17 +31,16 @@ fn main() -> Result<(),std::boxed::Box<dyn std::error::Error>> {
         }
     }
 
+    let spl_enable = settings.splunk.enable.clone();
+    let splunki = Arc::new(settings.splunk);
 
-    if settings.splunk.enable {
-        let splunki = Arc::new(settings.splunk);
+    if spl_enable {
         // start splunk checker
-        {
-            let new_splunk = splunki.clone();
-            let new_mail = mail.clone();
-            thread::spawn(move || {
-                algorithm::splunk_check(new_splunk, new_mail);
-            });
-        }
+        let new_splunk = splunki.clone();
+        let new_mail = mail.clone();
+        thread::spawn(move || {
+            algorithm::splunk_check(new_splunk, new_mail);
+        });
     }
 
     if settings.portscan.enable {
@@ -42,9 +49,13 @@ fn main() -> Result<(),std::boxed::Box<dyn std::error::Error>> {
     }
 
     if settings.webserver.enable {
-        // Start webserver
-        web::run(settings.webserver, Some(splunki), mail).expect("Could not start webserver");
+        let spl_web = if spl_enable {
+            Some(splunki.clone())
+        } else {
+            None
+        };
+
+        web::run(settings.webserver, spl_web, mail).expect("Could not start webserver");
     }
 
-    Ok(())
 }
