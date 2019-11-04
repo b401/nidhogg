@@ -1,23 +1,23 @@
 use algorithm;
 use arp_det;
 use config;
+use std::process::exit;
 use std::sync::Arc;
 use std::thread;
-use std::process::exit;
 use web;
 
-fn main()  {
+fn main() {
     let settings = match config::Config::from_file("/etc/nidhogg/config.yml") {
         Ok(setting) => setting,
         Err(e) => {
-            println!("{}",e);
+            println!("{}", e);
             exit(1);
         }
     };
 
     let mail = Arc::new(settings.mail);
     if settings.arpscan.enable {
-    // Start arp scanner
+        // Start arp scanner
         {
             let arpscan = settings.arpscan;
             let interface = settings.interface;
@@ -57,8 +57,7 @@ fn main()  {
         } else {
             None
         };
-        println!("[*] Starting webserver")
+        println!("[*] Starting webserver");
         web::run(settings.webserver, spl_web, mail).expect("Could not start webserver");
     }
-
 }
