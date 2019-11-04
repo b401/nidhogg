@@ -3,21 +3,15 @@ use serde::{Deserialize, Serialize};
 extern crate enum_derive;
 #[macro_use]
 extern crate custom_derive;
-use log::{error, info, warn};
-#[macro_use]
-extern crate systemd;
 use chrono;
 use config;
-use lettre::smtp::{authentication, ClientSecurity, SmtpClient};
-use lettre::{SmtpTransport, Transport};
+use lettre::smtp::{authentication, SmtpClient};
+use lettre::Transport;
 use lettre_email::EmailBuilder;
+use log::{error, warn};
 use scanner;
 use splunk;
-use std::{thread, time};
-use systemd::journal;
-
-// testing
-use std::env;
+use std::thread;
 
 custom_derive! {
     #[derive(EnumFromStr, Debug)]
@@ -32,12 +26,12 @@ custom_derive! {
 custom_derive! {
     #[derive(EnumFromStr, Debug)]
     enum Sensor {
-        network,
-        ping,
-        load,
-        memory,
-        disk,
-        unknown,
+        Network,
+        Ping,
+        Load,
+        Memory,
+        Disk,
+        Unknown,
     }
 }
 
@@ -46,18 +40,6 @@ pub struct Prtg {
     pub host: String,
     pub sensor: String,
     pub state: String,
-}
-
-struct Config {
-    email: String,
-}
-
-impl Config {
-    fn new() -> Self {
-        Config {
-            email: "sec@i-401.xyz".to_owned(),
-        }
-    }
 }
 
 pub fn sensor_down(
@@ -89,22 +71,32 @@ pub fn sensor_down(
         }
         // Host
         Sensor::disk | Sensor::load | Sensor::memory => {
-            let msg = match splunk{
+            let msg = match splunk {
                 Some(spl) => {
                     let mut rest = splunk::Rest::new(&spl.server, &spl.username, &spl.password);
                     match rest.check_sudo(&info.host) {
-                        Some(splunk_result) => format!("\n\nLast Splunk messages:\n{}", splunk_result),
+                        Some(splunk_result) => {
+                            format!("\n\nLast Splunk messages:\n{}", splunk_result)
+                        }
                         None => format!("\n\nLast Splunk messages:\n Host not found or no logs"),
                     }
-                },
-                None => String::new()
+                }
+                None => String::new(),
             };
 
             warn!(
                 "Host: {} , Sensor: {}, State: {}",
                 info.host, info.state, info.sensor
             );
-            send_mail(mail,&format!("Host: {} changed sensor: {} to state: {}\nPlease investigate!{}",info.host,info.sensor,info.state,msg), &format!("{}: {}", info.host, info.sensor)).unwrap();
+            send_mail(
+                mail,
+                &format!(
+                    "Host: {} changed sensor: {} to state: {}\nPlease investigate!{}",
+                    info.host, info.sensor, info.state, msg
+                ),
+                &format!("{}: {}", info.host, info.sensor),
+            )
+            .unwrap();
         }
         // Unknown
         Sensor::unknown => {
@@ -136,7 +128,7 @@ pub fn send_mail(
         .credentials(authentication)
         .authentication_mechanism(authentication::Mechanism::Plain)
         .transport();
-    client.send(email.into());
+    client.send(email.into()).unwrap();
     Ok(())
 }
 
