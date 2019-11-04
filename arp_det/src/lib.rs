@@ -49,14 +49,6 @@ pub struct Queue {
 }
 
 impl Queue {
-    fn new() -> Queue {
-        Queue { mac: Vec::new() }
-    }
-
-    fn set(&mut self, mac: MacAddr) {
-        self.mac.push(mac);
-    }
-
     pub fn get(&self) -> Option<Vec<String>> {
         match self.mac.len() {
             0 => None,
@@ -76,13 +68,13 @@ pub struct Inddex<'interface> {
     socket: network::Socket,
     online: HashMap<MacAddr, Tracking>,
     pub queue: db::DBC,
-    mail: std::sync::Arc<config::Mail>,
+    mail: Option<std::sync::Arc<config::Mail>>,
 }
 
 impl<'interface> Inddex<'interface> {
     fn new(
         config: &'interface (&config::Arpscan, &config::Interface),
-        mail: std::sync::Arc<config::Mail>,
+        mail: Option<std::sync::Arc<config::Mail>>,
     ) -> Result<Self> {
         Ok(Self {
             interface_name: &config.1.name,
@@ -91,7 +83,7 @@ impl<'interface> Inddex<'interface> {
             socket: network::Socket::new(config.1.index)?,
             online: HashMap::new(),
             queue: db::DBC::new(&config.0.db),
-            mail: mail,
+            mail,
         })
     }
 
@@ -181,8 +173,14 @@ impl<'interface> Inddex<'interface> {
     // WICHTIG!!!
     fn notify(&mut self, mac: MacAddr) {
         let msg = format!("[{}] New device found: {}", current_time(), mac);
-        let subject = format!("ARP NOTIFY!");
-        algorithm::send_mail(self.mail.clone(), &msg, &subject).unwrap();
+        let subject = "ARP NOTIFY!".to_string();
+        match &self.mail {
+            Some(_) =>  {
+                algorithm::send_mail(self.mail.clone().unwrap(), &msg, &subject).unwrap();
+            }
+            &None => (),
+        };
+
         match self.queue.insert_entry(&mac.to_string()) {
             Ok(_) => println!("New mac"),
             Err(e) => println!("Error: {}", e),
@@ -198,7 +196,7 @@ pub fn current_time() -> String {
 
 pub fn run(
     config: (&config::Arpscan, &config::Interface),
-    mail: std::sync::Arc<config::Mail>,
+    mail: Option<std::sync::Arc<config::Mail>>,
 ) -> Result<()> {
     println!("Starting arp detection");
     let mut inddex = Inddex::new(&config, mail)?;
