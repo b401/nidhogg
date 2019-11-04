@@ -16,10 +16,10 @@ use std::thread;
 custom_derive! {
     #[derive(EnumFromStr, Debug)]
     enum State {
-        up,
-        down,
-        critical,
-        unknown,
+        Up,
+        Down,
+        Critical,
+        Unknown,
     }
 }
 
@@ -47,10 +47,10 @@ pub fn sensor_down(
     splunk: Option<std::sync::Arc<config::Splunk>>,
     mail: std::sync::Arc<config::Mail>,
 ) {
-    let sensor: Sensor = info.sensor.parse().unwrap_or(Sensor::unknown);
+    let sensor: Sensor = info.sensor.parse().unwrap_or(Sensor::Unknown);
     match sensor {
         // network
-        Sensor::network | Sensor::ping => {
+        Sensor::Network | Sensor::Ping => {
             let mut msg = format!(
                 "Host: {} changed sensor: {} to state: {}\nPlease investigate!\n\n",
                 info.host, info.sensor, info.state
@@ -70,7 +70,7 @@ pub fn sensor_down(
             };
         }
         // Host
-        Sensor::disk | Sensor::load | Sensor::memory => {
+        Sensor::Disk | Sensor::Load | Sensor::Memory => {
             let msg = match splunk {
                 Some(spl) => {
                     let mut rest = splunk::Rest::new(&spl.server, &spl.username, &spl.password);
@@ -99,7 +99,7 @@ pub fn sensor_down(
             .unwrap();
         }
         // Unknown
-        Sensor::unknown => {
+        Sensor::Unknown => {
             error!(
                 "[Unknown] Host: {} , Sensor: {}, State: {}",
                 info.host, info.state, info.sensor
