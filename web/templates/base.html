@@ -1,48 +1,50 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    {% block head %}
-    <title>{%block title%}{%endblock title%}</title>
+    <!--{% block head %}-->
+    <!--<title>{%block title%}{%endblock title%}</title>-->
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <link rel="stylesheet" href="static/css/style.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <link rel="stylesheet" href="/home/buuky/Repos/nidhogg/static/css/style.css"/>    
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="https://kit.fontawesome.com/7f6d371de7.js" crossorigin="anonymous"></script>
 
-    {% endblock head %}
+
+    <!--{% endblock head %}-->
   </head>
-  <body>
-    <div id="background"></div>
-    <div id="header"></div>
-    <nav class="row">
-        <div class="col-3" id="bottom">
-            <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-            <a class="nav-link active" id="v-pills-home-tab" data-toggle="pill" href="#v-pills-home" role="tab" aria-controls="v-pills-home">Index</a>
-            <a class="nav-link" id="v-pills-profile-tab" data-toggle="pill" href="#v-pills-profile" role="tab" aria-controls="v-pills-profile">ARP</a>
-            <a class="nav-link" id="v-pills-messages-tab" data-toggle="pill" href="#v-pills-messages" role="tab" aria-controls="v-pills-messages">NMAP</a>
-            <a class="nav-link" id="v-pills-settings-tab" data-toggle="pill" href="#v-pills-settings" role="tab" aria-controls="v-pills-settings">Settings</a>
+  <body>    
+    <div id="header" class="bg-light border-bottom">               
+        <h1> <i class="fas fa-dragon"></i> Nidhogg | </h1>
+        <div class="dropdown show">
+            <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Menu
+            </a>
+            
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                <a class="dropdown-item" href="#">Port</a>
+                <a class="dropdown-item" href="#">Arp</a>
+                <a class="dropdown-item" href="#">Snmp</a>
             </div>
         </div>
-        <div class="col-9">
-            <div class="tab-content" id="v-pills-tabContent">
-            <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel" aria-labelledby="v-pills-home-tab"></div>
-            <div class="tab-pane fade" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab"></div>
-            <div class="tab-pane fade" id="v-pills-messages" role="tabpanel" aria-labelledby="v-pills-messages-tab"></div>
-            <div class="tab-pane fade" id="v-pills-settings" role="tabpanel" aria-labelledby="v-pills-settings-tab"></div>
-            </div>
-        </div>
-    </nav>
+    </div>
     <main>
-        {%block content%}
-        <div class="jumbotron jumbotron-fluid">
-            <div class="container">
-                <h1 class="display-4">{%block jumbotron%}{%endblock jumbotron%}</h1>
-                <p class="lead">{%block lead%}{%endblock lead%}</p>
-            </div>
+        <!--{%block content%}-->
+        <div class="jumbotron">
+            <h1 class="display-6 text-danger">Scan</h1>
+            <p class="lead"> <i class="fas fa-fire-alt"></i>
+                 Anomalie found for IP: 10.0.0.38</p>
+            <hr class="my-2">
+            <p>Port: 80 - State: ClosedButOpen</p>
+            <a class="btn btn-primary btn-sm" href="#" role="button">Learn more</a>
         </div>
-        {%endblock content%}
+        
+            
+        <!--{%endblock content%}-->
     </main>
-    <footer class="footer">
-        <div class="container"><span id="footspan">{%block footer%}{%endblock footer%}</span></div>
-    </footer>
+
   </body>
 </html>

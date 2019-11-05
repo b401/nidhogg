@@ -22,8 +22,8 @@ fn main() {
             let arpscan = settings.arpscan;
             let interface = settings.interface;
             let new_mail = mail.clone();
+            println!("[*] Starting arp scanner in new thread");
             thread::spawn(move || {
-                println!("[*] Starting arp scanner");
                 match arp_det::run((&arpscan, &interface), new_mail) {
                     Ok(_) => (),
                     Err(e) => eprintln!("{}", e),
@@ -39,8 +39,8 @@ fn main() {
         // start splunk checker
         let new_splunk = splunki.clone();
         let new_mail = mail.clone();
+        println!("[*] Starting Splunk scanner in new thread");
         thread::spawn(move || {
-            println!("[*] Starting Splunk scanner");
             algorithm::splunk_check(new_splunk, new_mail);
         });
     }
