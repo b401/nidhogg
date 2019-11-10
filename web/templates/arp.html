@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Port{% endblock title %}
+{% block content %}
+    {% if macs %}
+        {% for mac in macs%}
+        {% set maci = mac | split(pat=",") %}
+        {% set t = maci.0 | split(pat="T") %}
+        {% set td = t.1 | split(pat=".") %}
+            <div class="jumbotron">
+                <h1 class="display-7 text-danger">New foreign device</h1>
+                <p class="lead"> <i class="fas fa-fire-alt"></i>
+                <span >
+                    {{ maci.1 }} </br> - Date: {{ t.0 }} </br> - Time: {{ td.0 }}
+                </span>
+                <hr class="my-2">
+            </div>
+        {%endfor%}
+    {% else %}
+        {%include "undefined.html" %}
+    {% endif %}
+{% endblock content %}

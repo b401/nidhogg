@@ -45,11 +45,15 @@ fn main() {
         });
     }
 
-    if settings.portscan.enable {
+    let portscan = Arc::new(settings.portscan);
+    let portscan: Option<std::sync::Arc<config::Portscan>> = if portscan.enable {
         // start 5min scanner
         println!("[*] Starting portscanner");
-        algorithm::scan(settings.portscan, mail.clone());
-    }
+        algorithm::scan(portscan.clone(), mail.clone());
+        Some(portscan)
+    } else {
+        None
+    };
 
     if settings.webserver.enable {
         let spl_web = if spl_enable {
@@ -58,6 +62,6 @@ fn main() {
             None
         };
         println!("[*] Starting webserver");
-        web::run(settings.webserver, spl_web, mail).expect("Could not start webserver");
+        web::run(settings.webserver, spl_web, mail, portscan).expect("Could not start webserver");
     }
 }

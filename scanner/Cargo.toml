@@ -14,3 +14,4 @@ error-chain = "0.12.1"
 tempfile = "3.1.0"
 serde-xml-rs = "0.3.1"
 sedregex = "0.2.4"
+config = { path="../config" }

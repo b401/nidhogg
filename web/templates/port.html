@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Port{% endblock title %}
+{% block content %}
+    {% for anomalies in anomalie %}
+        <div class="jumbotron">
+            <h1 class="display-7 text-danger">{{ anomalies.ip }}</h1>
+            <p class="lead"> <i class="fas fa-fire-alt"></i>
+            <span >
+                {% for port in anomalies.port %}
+                {% set port_nr = port.0 %}
+                {% set state = port.1 %}
+
+                <span class="port">
+                    - Port: {{ port_nr }}
+                    - State: {{ state | replace(from="OpenButClosed", to="Closed") | replace(from="ClosedButOpen", to="Open")}}
+                </span>
+                {%endfor%}
+            </span>
+            <hr class="my-2">
+        </div>
+    {% endfor %}
+{% endblock content %}

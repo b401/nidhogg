@@ -2,7 +2,6 @@
 use rusqlite::types::ToSql;
 use rusqlite::{params, Connection, Result, NO_PARAMS};
 use std::path::Path;
-use time::Timespec;
 
 pub struct DBC {
     connection: Connection,
@@ -39,7 +38,10 @@ impl DBC {
     }
 
     pub fn get_entry(&self) -> Option<Vec<String>> {
-        let mut prepared_statement = self.connection.prepare("SELECT mac from arp").unwrap();
+        let mut prepared_statement = self
+            .connection
+            .prepare(r#"SELECT time_created || ',' || mac from arp"#)
+            .unwrap();
         let rows = prepared_statement
             .query_map(NO_PARAMS, |row| row.get(0))
             .unwrap();
@@ -49,6 +51,7 @@ impl DBC {
             addresses.push(mac.unwrap());
         }
 
+        dbg!(&addresses);
         if addresses.len() != 0 {
             Some(addresses)
         } else {

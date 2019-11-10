@@ -1,3 +1,4 @@
+use config;
 use nmap_analyze::output::JsonOutput;
 use nmap_analyze::output::{OutputConfig, OutputDetail, OutputFormat};
 use nmap_analyze::*;
@@ -51,7 +52,7 @@ pub struct Root {
 
 #[derive(Default, Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct Address {
-    ip: String,
+    pub ip: String,
     pub port_results: Vec<PortResult>,
     #[serde(skip)]
     portspec_name: String,
@@ -67,10 +68,28 @@ pub struct PortResult {
     pub fail: Option<(i64, String)>,
 }
 
-pub fn run(host: Option<&String>) -> Result<Option<ScanResult>> {
+#[derive(Default, Debug, Serialize)]
+pub struct DisplayScan {
+    pub ip: String,
+    pub port: Vec<(i64, String)>,
+}
+
+impl DisplayScan {
+    pub fn from(ip: String) -> DisplayScan {
+        DisplayScan {
+            ip: ip,
+            port: Vec::new(),
+        }
+    }
+}
+
+pub fn run(
+    host: Option<&String>,
+    config: &std::sync::Arc<config::Portscan>,
+) -> Result<Option<ScanResult>> {
     use sedregex::find_and_replace;
-    let portspecs = PortSpecs::from_file("portspecs.yml").expect("Failed to load portspec file");
-    let mappings = Mapping::from_file("mappings.xml").expect("Failed to load mapping file");
+    let portspecs = PortSpecs::from_file(&config.portspec).expect("Failed to load portspec file");
+    let mappings = Mapping::from_file(&config.mappings).expect("Failed to load mapping file");
 
     let dst_host: String = match host {
         Some(dns) => dns.to_owned(),
@@ -113,7 +132,6 @@ pub fn run(host: Option<&String>) -> Result<Option<ScanResult>> {
     };
 
     let mut buffer = Vec::new();
-
     analyzer_result
         .output(&output_config, &mut buffer)
         .expect("output failure");
@@ -126,9 +144,9 @@ pub fn run(host: Option<&String>) -> Result<Option<ScanResult>> {
         Err(nmap_analyze::Error::from_kind(
             nmap_analyze::ErrorKind::Msg("Scan failed".to_owned()),
         ))
-    } else if utfbuffer.pass == 1 {
+    } else if utfbuffer.pass == 0 {
         Ok(None)
     } else {
-        Ok(Some(utfbuffer))
+        Ok(None)
     }
 }

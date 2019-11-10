@@ -2396,6 +2396,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "scanner"
 version = "0.1.0"
 dependencies = [
+ "config 0.1.0",
  "error-chain 0.12.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "nmap-analyze 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "sedregex 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",

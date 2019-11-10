@@ -42,10 +42,32 @@ pub struct Prtg {
     pub state: String,
 }
 
-pub fn sensor_down(
+pub fn scan_once(config: std::sync::Arc<config::Portscan>) -> Vec<scanner::ScanResult> {
+    use nmap_analyze::Mapping;
+    use nmap_analyze::*;
+
+    let mut rs = Vec::new();
+    let mappings = Mapping::from_file(&config.mappings).expect("Failed to load mapping file");
+    for i in &mappings.mappings {
+        for x in &i.ips {
+            match scanner::run(Some(&x.to_string()), &config) {
+                Ok(scan) => {
+                    if scan.is_some() {
+                        rs.push(scan.unwrap())
+                    }
+                }
+                Err(e) => eprintln!("{}", e),
+            };
+        }
+    }
+    rs
+}
+
+pub fn sensor_changed(
     info: &Prtg,
     splunk: Option<std::sync::Arc<config::Splunk>>,
     mail: std::sync::Arc<config::Mail>,
+    scan: std::sync::Arc<config::Portscan>,
 ) {
     let sensor: Sensor = info.sensor.parse().unwrap_or(Sensor::Unknown);
     match sensor {
@@ -58,7 +80,7 @@ pub fn sensor_down(
 
             warn!("{}", msg);
 
-            match scanner::run(Some(&info.host)) {
+            match scanner::run(Some(&info.host), &scan) {
                 Ok(res) => {
                     msg = match res {
                         Some(scan_result) => format!("{}\n{}", msg, scan_result),
@@ -156,14 +178,12 @@ pub fn splunk_check(config: std::sync::Arc<config::Splunk>, mail: std::sync::Arc
     });
 }
 
-pub fn scan(config: config::Portscan, mail: std::sync::Arc<config::Mail>) {
+pub fn scan(config: std::sync::Arc<config::Portscan>, mail: std::sync::Arc<config::Mail>) {
     use nmap_analyze::Mapping;
     use nmap_analyze::*;
 
+    let mappings = Mapping::from_file(&config.mappings).expect("Failed to load mapping file");
     thread::spawn(move || loop {
-        thread::sleep(std::time::Duration::from_secs(config.timeout));
-        let mappings = Mapping::from_file(&config.mappings).expect("Failed to load mapping file");
-
         let mut hosts: Vec<String> = Vec::new();
         for i in &mappings.mappings {
             for x in &i.ips {
@@ -171,7 +191,7 @@ pub fn scan(config: config::Portscan, mail: std::sync::Arc<config::Mail>) {
             }
         }
         for host in hosts {
-            match scanner::run(Some(&host)) {
+            match scanner::run(Some(&host), &config) {
                 Ok(res) => {
                     match res {
                         Some(scan_result) => {
@@ -191,5 +211,6 @@ pub fn scan(config: config::Portscan, mail: std::sync::Arc<config::Mail>) {
                 Err(e) => println!("Error: {}", e),
             };
         }
+        thread::sleep(std::time::Duration::from_secs(config.timeout));
     });
 }

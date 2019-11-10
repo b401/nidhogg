@@ -1,0 +1,55 @@
+= Nidhogg
+
+== Info
+If you're planning to run nidhogg with it's scanning capability, you won't get around to sadly run it as root. (or with cap rights) +
+This is due the nmap scanning parameter and arp scanning mechanism. +
+Ideally you're using the already created docker, to mitigate some of the security concerns, not all though :(.
+
+== Requirements
+.Linux
+- libpcap0.8
+- nmap
+- curl
+- sqlite3-0
+
+WARNING: If you're running Ubuntu chances are high that you'll need to create a symlink for libpcap +
+``ln -s /usr/lib/x86_64-linux-gnu/libpcap.so.1.9.1 /usr/lib/x86_64-linux-gnu/libpcap.so.1``
+
+.Windows
+
+== Installation
+.From source
+1. Clone repository or download source
+2. Build nidhogg ``cargo build --release``
+3. Manually create config files (see example config.yml)
+
+.Binary (Ubuntu)
+1. Download latest .deb
+2. Install with dpkg ``dpkg -i xx.deb``
+3. Configure application (/etc/nidhogg/)
+
+.Binary (Windows)
+1. Download latest .exe
+
+== Configuration
+WARNING: All configflags are mandatory
+
+See examples for more indepth settings.
+
+
+.config.yml
+Main configuration file. +
+
+.portspecs.yml
+Set ports to monitor
+
+.mappings.xml
+Map portspecs to hosts.
+
+== Deinstallation
+
+.Ubuntu / apt based
+``apt remove nidhogg``
+
+.Compiled from source
+``rm -r /etc/nidhogg && rm /usr/bin/nidhogg``
