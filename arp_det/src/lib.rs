@@ -174,9 +174,7 @@ impl<'interface> Inddex<'interface> {
     fn notify(&mut self, mac: MacAddr) {
         let msg = format!("[{}] New device found: {}", current_time(), mac);
         let subject = format!("ARP NOTIFY!");
-        if self.mail.enable {
-            algorithm::send_mail(self.mail.clone(), &msg, &subject).unwrap();
-        }
+        algorithm::send_mail(self.mail.clone(), &msg, &subject).unwrap();
         match self.queue.insert_entry(&mac.to_string()) {
             Ok(_) => println!("New mac"),
             Err(e) => println!("Error: {}", e),

@@ -1,35 +1,10 @@
 #[macro_use]
 extern crate tera;
 
-use actix_web::{get,post, web, App, HttpResponse,HttpServer, Result};
+use actix_web::{get, web, App, Error, HttpResponse, HttpServer, Result};
 use algorithm;
 use config;
 use db;
-use serde::{Serialize,Deserialize};
-use actix_identity::Identity;
-use actix_identity::{CookieIdentityPolicy, IdentityService};
-
-/// # Login
-/// Login user and sensor
-#[post("/login")]
-fn login(params: web::Form<Login>, id: Identity) -> HttpResponse {
-    // Fix for prod
-    // Only for demostrative purpose.
-    if params.username.as_ref().unwrap_or(&"unknown".to_owned()) == &"admin".to_owned() && params.password.as_ref().unwrap_or(&"unknown".to_owned()) == &"admin".to_owned() {
-        id.remember("admin".to_owned());
-    }
-    HttpResponse::Found().header("location", "/port").finish()
-}
-
-/// # Logout
-/// Logout user and sensor
-#[get("/logout")]
-fn logout(id: Identity) -> HttpResponse {
-    // Fix for prod
-    // Only for demostrative purpose.
-    id.forget();
-    HttpResponse::Found().header("location", "/").finish()
-}
 
 /// #Sensor
 /// Report down sensors
@@ -53,7 +28,7 @@ fn sensor(path: web::Path<algorithm::Prtg>, data: web::Data<Data>) -> Result<Str
 fn index(tmpl: web::Data<Data>) -> Result<HttpResponse> {
     let ctx = tmpl
         .tera
-        .render("login.html", &tera::Context::new())
+        .render("index.html", &tera::Context::new())
         .unwrap();
     Ok(HttpResponse::Ok().content_type("text/html").body(ctx))
 }
@@ -62,34 +37,30 @@ fn index(tmpl: web::Data<Data>) -> Result<HttpResponse> {
 /// Portoverview
 /// Url: /port
 #[get("/port")]
-fn port(tmpl: web::Data<Data>, id: Identity) -> Result<HttpResponse> {
-    if id.identity().unwrap_or_else(|| "unknown".to_owned()) == "admin".to_owned() {
-        let mut context = tera::Context::new();
-        if let Some(config) = tmpl.portscan.clone() {
-            let res = algorithm::scan_once(config);
-            let mut trst: Vec<scanner::DisplayScan> = Default::default();
+fn port(tmpl: web::Data<Data>) -> Result<HttpResponse> {
+    let mut context = tera::Context::new();
+    if let Some(config) = tmpl.portscan.clone() {
+        let res = algorithm::scan_once(config);
+        let mut trst: Vec<scanner::DisplayScan> = Default::default();
 
-            for i in res {
-                let ip = i.host_analysis_results.ip.ip;
-                let mut scan: scanner::DisplayScan = scanner::DisplayScan::from(ip);
-                for x in i.host_analysis_results.ip.port_results {
-                    if x.fail.is_some() {
-                        scan.port.push(x.fail.unwrap());
-                    }
+        for i in res {
+            let ip = i.host_analysis_results.ip.ip;
+            let mut scan: scanner::DisplayScan = scanner::DisplayScan::from(ip);
+            for x in i.host_analysis_results.ip.port_results {
+                if x.fail.is_some() {
+                    scan.port.push(x.fail.unwrap());
                 }
-                trst.push(scan);
             }
-
-            context.insert("anomalie", &trst);
-            let ctx = tmpl.tera.render("port.html", &context).unwrap();
-            Ok(HttpResponse::Ok().content_type("text/html").body(ctx))
-        } else {
-            //TODO
-            let ctx = tmpl.tera.render("port.html", &context).unwrap();
-            Ok(HttpResponse::Ok().content_type("text/html").body(ctx))
+            trst.push(scan);
         }
+
+        context.insert("anomalie", &trst);
+        let ctx = tmpl.tera.render("port.html", &context).unwrap();
+        Ok(HttpResponse::Ok().content_type("text/html").body(ctx))
     } else {
-        Ok(HttpResponse::Found().header("location", "/").finish())
+        //TODO
+        let ctx = tmpl.tera.render("port.html", &context).unwrap();
+        Ok(HttpResponse::Ok().content_type("text/html").body(ctx))
     }
 }
 
@@ -97,30 +68,33 @@ fn port(tmpl: web::Data<Data>, id: Identity) -> Result<HttpResponse> {
 /// Path to get current arp results
 /// Url: ${hostname}/arpwatch
 #[get("/arp")]
-fn arpoverview(data: web::Data<Data>,id: Identity) -> HttpResponse {
-    if id.identity().unwrap_or_else(|| "unknown".to_owned()) == "admin".to_owned() {
-        let mut context = tera::Context::new();
-        match data.db.get_entry() {
-            Some(arp) => {
-                //data.db.remove_entry().unwrap();
-                context.insert("macs", &arp);
-                let ctx = data.tera.render("arp.html", &context).unwrap();
-                HttpResponse::Ok().content_type("text/html").body(ctx)
-            }
-            None => {
-                let ctx = data.tera.render("arp.html", &tera::Context::new()).unwrap();
-                HttpResponse::Ok().content_type("text/html").body(ctx)
-            }
+fn arpoverview(data: web::Data<Data>) -> HttpResponse {
+    let mut context = tera::Context::new();
+
+    match data.db.get_entry() {
+        Some(arp) => {
+            //data.db.remove_entry().unwrap();
+            context.insert("macs", &arp);
+            let ctx = data.tera.render("arp.html", &context).unwrap();
+            HttpResponse::Ok().content_type("text/html").body(ctx)
         }
-    } else {
-        HttpResponse::Found().header("location", "/").finish()
+        None => {
+            let ctx = data.tera.render("arp.html", &tera::Context::new()).unwrap();
+            HttpResponse::Ok().content_type("text/html").body(ctx)
+        }
     }
 }
 
-#[derive(Serialize,Deserialize)]
-struct Login {
-    username: Option<String>,
-    password: Option<String>
+/// #/test
+/// Path to check if tera templates are working
+/// Url: ${hostname}/test
+#[get("test")]
+fn test(tmpl: web::Data<Data>) -> Result<HttpResponse, Error> {
+    let ctx = tmpl
+        .tera
+        .render("user.html", &tera::Context::new())
+        .unwrap();
+    Ok(HttpResponse::Ok().content_type("text/html").body(ctx))
 }
 
 struct Data {
@@ -160,17 +134,11 @@ pub fn run(
         let data = Data::new(tera, splunk.clone(), mail.clone(), portscan.clone());
         App::new()
             .data(data)
-            .wrap(IdentityService::new(
-                    CookieIdentityPolicy::new(&[0;32])
-                    .name("Nidhogg")
-                    .secure(false),
-            ))
             .service(actix_files::Files::new("/static", "/etc/nidhogg/static").show_files_listing())
             .service(sensor)
             .service(index)
+            .service(test)
             .service(port)
-            .service(login)
-            .service(logout)
             .service(arpoverview)
     })
     .bind(&format!("{}:{}", config.address, config.port))?
