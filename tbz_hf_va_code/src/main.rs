@@ -7,7 +7,14 @@ use std::thread;
 use web;
 
 fn main() {
-    let settings = match config::Config::from_file("/etc/nidhogg/config.yml") {
+
+    let yaml_settings = if cfg!(target_os = "linux") {
+        "/etc/nidhogg/config.yml".to_string()
+    } else {
+        r#"C:\Programme\nidhogg\config.yml"#.to_string()
+    };
+
+    let settings = match config::Config::from_file(yaml_settings) {
         Ok(setting) => setting,
         Err(e) => {
             println!("{}", e);
@@ -55,13 +62,14 @@ fn main() {
         None
     };
 
-    if settings.webserver.enable {
+    let webserv = Arc::new(settings.webserver);
+    if webserv.enable {
         let spl_web = if spl_enable {
             Some(splunki.clone())
         } else {
             None
         };
         println!("[*] Starting webserver");
-        web::run(settings.webserver, spl_web, mail, portscan).expect("Could not start webserver");
+        web::run(webserv.clone(), spl_web, mail, portscan).expect("Could not start webserver");
     }
 }

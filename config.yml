@@ -1,6 +1,8 @@
 # Choose on which address and port the webserver should listen
 webserver:
     enable: true
+    username: "admin"
+    password: "admin"
     address: "0.0.0.0"
     port: "8080"
 
@@ -13,7 +15,7 @@ mail:
     email: "user@i-401.xyz"
     from: "user@gmail.com"
 
-# Set address and login to remote Splunk endpoint (multiple endpoints are possible)    
+# Set address and login to remote Splunk endpoint (multiple endpoints are possible)
 splunk:
     enable: true
     server: "splunk:8089"
@@ -22,7 +24,7 @@ splunk:
     interval: 500
 
 # Set remote snmp server address and community + oids.
-# Multiple oids and servers are possible 
+# Multiple oids and servers are possible
 snmp:
     enable: true
     server: "127.0.0.1"
@@ -37,10 +39,10 @@ portscan:
     timeout: 500
 
 # Enable/disable arpscanning (requires root rights)
-# Use mac list to whitelist devices. (You won't get notifications if those devices getting connected)    
+# Use mac list to whitelist devices. (You won't get notifications if those devices getting connected)
 arpscan:
     enable: true
-    interface: "eno1"    
+    interface: "eno1"
     db: "/tmp/arp.db"
     timeout: 500
     mac:

@@ -12,11 +12,11 @@ use actix_identity::{CookieIdentityPolicy, IdentityService};
 /// # Login
 /// Login user and sensor
 #[post("/login")]
-fn login(params: web::Form<Login>, id: Identity) -> HttpResponse {
+fn login(data: web::Data<Data>,params: web::Form<Login>, id: Identity) -> HttpResponse {
     // Fix for prod
     // Only for demostrative purpose.
-    if params.username.as_ref().unwrap_or(&"unknown".to_owned()) == &"admin".to_owned() && params.password.as_ref().unwrap_or(&"unknown".to_owned()) == &"admin".to_owned() {
-        id.remember("admin".to_owned());
+    if params.username.as_ref().unwrap_or(&"unknown".to_owned()) == &data.config.username && params.password.as_ref().unwrap_or(&"unknown".to_owned()) == &data.config.password {
+        id.remember(data.config.username.to_owned());
     }
     HttpResponse::Found().header("location", "/port").finish()
 }
@@ -63,7 +63,7 @@ fn index(tmpl: web::Data<Data>) -> Result<HttpResponse> {
 /// Url: /port
 #[get("/port")]
 fn port(tmpl: web::Data<Data>, id: Identity) -> Result<HttpResponse> {
-    if id.identity().unwrap_or_else(|| "unknown".to_owned()) == "admin".to_owned() {
+    if id.identity().unwrap_or_else(|| "unknown".to_owned()) == tmpl.config.username {
         let mut context = tera::Context::new();
         if let Some(config) = tmpl.portscan.clone() {
             let res = algorithm::scan_once(config);
@@ -98,7 +98,7 @@ fn port(tmpl: web::Data<Data>, id: Identity) -> Result<HttpResponse> {
 /// Url: ${hostname}/arpwatch
 #[get("/arp")]
 fn arpoverview(data: web::Data<Data>,id: Identity) -> HttpResponse {
-    if id.identity().unwrap_or_else(|| "unknown".to_owned()) == "admin".to_owned() {
+    if id.identity().unwrap_or_else(|| "unknown".to_owned()) == data.config.username {
         let mut context = tera::Context::new();
         match data.db.get_entry() {
             Some(arp) => {
@@ -129,6 +129,7 @@ struct Data {
     splunk: Option<std::sync::Arc<config::Splunk>>,
     mail: std::sync::Arc<config::Mail>,
     portscan: Option<std::sync::Arc<config::Portscan>>,
+    config: std::sync::Arc<config::Webserver>,
 }
 
 impl Data {
@@ -137,27 +138,48 @@ impl Data {
         splunk: Option<std::sync::Arc<config::Splunk>>,
         mail: std::sync::Arc<config::Mail>,
         portscan: Option<std::sync::Arc<config::Portscan>>,
+        config: std::sync::Arc<config::Webserver>
     ) -> Data {
+        let db = if cfg!(target_os = "linux") {
+            "/etc/nidhogg/arp.db".to_string()
+        } else {
+            r#"C:\Programme\nidhogg\arp.db"#.to_string()
+        };
+
         Data {
             tera,
-            db: db::DBC::new("/tmp/arp.db"),
+            db: db::DBC::new(&db),
             splunk,
             mail,
             portscan,
+            config,
         }
     }
 }
 
 pub fn run(
-    config: config::Webserver,
+    config: std::sync::Arc<config::Webserver>,
     splunk: Option<std::sync::Arc<config::Splunk>>,
     mail: std::sync::Arc<config::Mail>,
     portscan: Option<std::sync::Arc<config::Portscan>>,
 ) -> std::io::Result<()> {
     println!("Starting webserver on {}:{}", config.address, config.port);
+    let arc = config.clone();
     HttpServer::new(move || {
-        let tera = compile_templates!(concat!("/etc/nidhogg/templates/**/*"));
-        let data = Data::new(tera, splunk.clone(), mail.clone(), portscan.clone());
+        let mount = if cfg!(target_os = "linux") {
+            concat!("/etc/nidhogg/templates/**/*")
+        } else {
+            concat!(r#"C:\Programme\nidhogg\templates\**\*"#)
+        };
+
+        let static_web = if cfg!(target_os = "linux") {
+            "/etc/nidhogg/static".to_string()
+        } else {
+            r#"C:\Programme\nidhogg\static"#.to_string()
+        };
+
+        let tera = compile_templates!(mount);
+        let data = Data::new(tera, splunk.clone(), mail.clone(), portscan.clone(), arc.clone());
         App::new()
             .data(data)
             .wrap(IdentityService::new(
@@ -165,7 +187,7 @@ pub fn run(
                     .name("Nidhogg")
                     .secure(false),
             ))
-            .service(actix_files::Files::new("/static", "/etc/nidhogg/static").show_files_listing())
+            .service(actix_files::Files::new("/static", static_web).show_files_listing())
             .service(sensor)
             .service(index)
             .service(port)

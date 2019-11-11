@@ -86,6 +86,8 @@ pub struct Webserver {
     pub enable: bool,
     pub address: Ipv4Addr,
     pub port: String,
+    pub username: String,
+    pub password: String,
 }
 
 #[derive(Debug)]
