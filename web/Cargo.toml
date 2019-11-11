@@ -15,3 +15,5 @@ db = { path = "../db" }
 scanner = { path = "../scanner" }
 algorithm = { path = "../algorithm" }
 config = { path = "../config" }
+actix-identity = "0.1.0"
+serde = "1.0.102"

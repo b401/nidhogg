@@ -195,15 +195,17 @@ pub fn scan(config: std::sync::Arc<config::Portscan>, mail: std::sync::Arc<confi
                 Ok(res) => {
                     match res {
                         Some(scan_result) => {
-                            send_mail(
-                                mail.clone(),
-                                &format!("Time: {} {}", current_time(), scan_result),
-                                &format!(
-                                    "[Nidhogg] Automated Scanner found anomaly in host {}",
-                                    host
-                                ),
-                            )
-                            .unwrap();
+                            if mail.enable {
+                                send_mail(
+                                    mail.clone(),
+                                    &format!("Time: {} {}", current_time(), scan_result),
+                                    &format!(
+                                        "[Nidhogg] Automated Scanner found anomaly in host {}",
+                                        host
+                                    ),
+                                )
+                                .unwrap();
+                            }
                         }
                         None => (),
                     };

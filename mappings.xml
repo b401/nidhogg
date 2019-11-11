@@ -3,16 +3,9 @@
         {
             "hostname": "artoria",
             "id": "i-0",
-            "ips": ["10.0.0.33"],
+            "ips": ["10.62.119.79"],
             "name": "artoria",
             "portspec": "artoria"
-        },
-        {
-            "hostname": "splunk",
-            "id": "i-1",
-            "ips": ["10.0.0.36"],
-            "name": "splunk",
-            "portspec": "splunk"
         }
     ]
 }
