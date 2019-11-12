@@ -29,7 +29,11 @@ WARNING: If you're running Ubuntu chances are high that you'll need to create a 
 3. Configure application (/etc/nidhogg/)
 
 .Binary (Windows)
-1. Download latest .exe
+Get the Docker image from: +
+https://hub.docker.com/r/b401/nidhogg
+
+.Docker
+https://hub.docker.com/r/b401/nidhogg
 
 == Configuration
 WARNING: All configflags are mandatory
