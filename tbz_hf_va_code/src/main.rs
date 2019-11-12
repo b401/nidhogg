@@ -7,12 +7,7 @@ use std::thread;
 use web;
 
 fn main() {
-
-    let yaml_settings = if cfg!(target_os = "linux") {
-        "/etc/nidhogg/config.yml".to_string()
-    } else {
-        r#"C:\Programme\nidhogg\config.yml"#.to_string()
-    };
+    let yaml_settings = "/etc/nidhogg/config.yml".to_string();
 
     let settings = match config::Config::from_file(yaml_settings) {
         Ok(setting) => setting,
@@ -23,15 +18,18 @@ fn main() {
     };
 
     let mail = Arc::new(settings.mail);
-    if settings.arpscan.enable {
-        // Start arp scanner
+    let arp_enable = settings.arpscan.enable.clone();
+    let arpscan = Arc::new(settings.arpscan);
+    if arp_enable {
         {
-            let arpscan = settings.arpscan;
+            // Start arp scanner
+            let new_arpscan = arpscan.clone();
             let interface = settings.interface;
             let new_mail = mail.clone();
+
             println!("[*] Starting arp scanner in new thread");
             thread::spawn(move || {
-                match arp_det::run((&arpscan, &interface), new_mail) {
+                match arp_det::run((&new_arpscan, &interface), new_mail) {
                     Ok(_) => (),
                     Err(e) => eprintln!("{}", e),
                 };
@@ -41,18 +39,19 @@ fn main() {
 
     let spl_enable = settings.splunk.enable.clone();
     let splunki = Arc::new(settings.splunk);
+    let portscan = Arc::new(settings.portscan);
+    let webserv = Arc::new(settings.webserver);
 
     if spl_enable {
         // start splunk checker
-        let new_splunk = splunki.clone();
+        let new_splunki = splunki.clone();
         let new_mail = mail.clone();
         println!("[*] Starting Splunk scanner in new thread");
         thread::spawn(move || {
-            algorithm::splunk_check(new_splunk, new_mail);
+            algorithm::splunk_check(new_splunki, new_mail);
         });
     }
 
-    let portscan = Arc::new(settings.portscan);
     let portscan: Option<std::sync::Arc<config::Portscan>> = if portscan.enable {
         // start 5min scanner
         println!("[*] Starting portscanner");
@@ -62,14 +61,21 @@ fn main() {
         None
     };
 
-    let webserv = Arc::new(settings.webserver);
     if webserv.enable {
         let spl_web = if spl_enable {
             Some(splunki.clone())
         } else {
             None
         };
+
+        let arp_web = if arp_enable {
+            Some(arpscan.clone())
+        } else {
+            None
+        };
+
         println!("[*] Starting webserver");
-        web::run(webserv.clone(), spl_web, mail, portscan).expect("Could not start webserver");
+        web::run(webserv.clone(), spl_web, mail, portscan, arp_web)
+            .expect("Could not start webserver");
     }
 }
