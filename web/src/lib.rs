@@ -1,21 +1,23 @@
 #[macro_use]
 extern crate tera;
 
-use actix_web::{get,post, web, App, HttpResponse,HttpServer, Result};
+use actix_identity::Identity;
+use actix_identity::{CookieIdentityPolicy, IdentityService};
+use actix_web::{get, post, web, App, HttpResponse, HttpServer, Result};
 use algorithm;
 use config;
 use db;
-use serde::{Serialize,Deserialize};
-use actix_identity::Identity;
-use actix_identity::{CookieIdentityPolicy, IdentityService};
+use serde::{Deserialize, Serialize};
 
 /// # Login
 /// Login user and sensor
 #[post("/login")]
-fn login(data: web::Data<Data>,params: web::Form<Login>, id: Identity) -> HttpResponse {
+fn login(data: web::Data<Data>, params: web::Form<Login>, id: Identity) -> HttpResponse {
     // Fix for prod
     // Only for demostrative purpose.
-    if params.username.as_ref().unwrap_or(&"unknown".to_owned()) == &data.config.username && params.password.as_ref().unwrap_or(&"unknown".to_owned()) == &data.config.password {
+    if params.username.as_ref().unwrap_or(&"unknown".to_owned()) == &data.config.username
+        && params.password.as_ref().unwrap_or(&"unknown".to_owned()) == &data.config.password
+    {
         id.remember(data.config.username.to_owned());
     }
     HttpResponse::Found().header("location", "/port").finish()
@@ -97,35 +99,39 @@ fn port(tmpl: web::Data<Data>, id: Identity) -> Result<HttpResponse> {
 /// Path to get current arp results
 /// Url: ${hostname}/arpwatch
 #[get("/arp")]
-fn arpoverview(data: web::Data<Data>,id: Identity) -> HttpResponse {
+fn arpoverview(data: web::Data<Data>, id: Identity) -> HttpResponse {
     if id.identity().unwrap_or_else(|| "unknown".to_owned()) == data.config.username {
         let mut context = tera::Context::new();
-        match data.db.get_entry() {
-            Some(arp) => {
-                //data.db.remove_entry().unwrap();
-                context.insert("macs", &arp);
-                let ctx = data.tera.render("arp.html", &context).unwrap();
-                HttpResponse::Ok().content_type("text/html").body(ctx)
+        if let Some(db) = &data.db {
+            match db.get_entry() {
+                Some(arp) => {
+                    //data.db.remove_entry().unwrap();
+                    context.insert("macs", &arp);
+                    let ctx = data.tera.render("arp.html", &context).unwrap();
+                    HttpResponse::Ok().content_type("text/html").body(ctx)
+                }
+                None => {
+                    let ctx = data.tera.render("arp.html", &tera::Context::new()).unwrap();
+                    HttpResponse::Ok().content_type("text/html").body(ctx)
+                }
             }
-            None => {
-                let ctx = data.tera.render("arp.html", &tera::Context::new()).unwrap();
-                HttpResponse::Ok().content_type("text/html").body(ctx)
-            }
+        } else {
+            HttpResponse::Found().header("location", "/404").finish()
         }
     } else {
         HttpResponse::Found().header("location", "/").finish()
     }
 }
 
-#[derive(Serialize,Deserialize)]
+#[derive(Serialize, Deserialize)]
 struct Login {
     username: Option<String>,
-    password: Option<String>
+    password: Option<String>,
 }
 
 struct Data {
     tera: tera::Tera,
-    db: db::DBC,
+    db: Option<db::DBC>,
     splunk: Option<std::sync::Arc<config::Splunk>>,
     mail: std::sync::Arc<config::Mail>,
     portscan: Option<std::sync::Arc<config::Portscan>>,
@@ -138,17 +144,18 @@ impl Data {
         splunk: Option<std::sync::Arc<config::Splunk>>,
         mail: std::sync::Arc<config::Mail>,
         portscan: Option<std::sync::Arc<config::Portscan>>,
-        config: std::sync::Arc<config::Webserver>
+        config: std::sync::Arc<config::Webserver>,
+        arpscan: Option<std::sync::Arc<config::Arpscan>>,
     ) -> Data {
-        let db = if cfg!(target_os = "linux") {
-            "/etc/nidhogg/arp.db".to_string()
+        let path_to_db = if let Some(db_config) = arpscan {
+            Some(db::DBC::new(&db_config.db))
         } else {
-            r#"C:\Programme\nidhogg\arp.db"#.to_string()
+            None
         };
 
         Data {
             tera,
-            db: db::DBC::new(&db),
+            db: path_to_db,
             splunk,
             mail,
             portscan,
@@ -162,6 +169,7 @@ pub fn run(
     splunk: Option<std::sync::Arc<config::Splunk>>,
     mail: std::sync::Arc<config::Mail>,
     portscan: Option<std::sync::Arc<config::Portscan>>,
+    arpscan: Option<std::sync::Arc<config::Arpscan>>,
 ) -> std::io::Result<()> {
     println!("Starting webserver on {}:{}", config.address, config.port);
     let arc = config.clone();
@@ -179,11 +187,18 @@ pub fn run(
         };
 
         let tera = compile_templates!(mount);
-        let data = Data::new(tera, splunk.clone(), mail.clone(), portscan.clone(), arc.clone());
+        let data = Data::new(
+            tera,
+            splunk.clone(),
+            mail.clone(),
+            portscan.clone(),
+            arc.clone(),
+            arpscan.clone(),
+        );
         App::new()
             .data(data)
             .wrap(IdentityService::new(
-                    CookieIdentityPolicy::new(&[0;32])
+                CookieIdentityPolicy::new(&[0; 32])
                     .name("Nidhogg")
                     .secure(false),
             ))
