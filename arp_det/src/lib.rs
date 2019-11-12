@@ -92,7 +92,7 @@ impl<'interface> Inddex<'interface> {
             .promisc(true)
             .open()?;
         capture.direction(pcap::Direction::In)?;
-        capture.filter("arp or (udp and port bootpc)")?;
+        capture.filter("arp or (udp and port 67)")?;
 
         let (s, r) = crossbeam_channel::unbounded();
         std::thread::spawn(move || loop {
@@ -178,7 +178,6 @@ impl<'interface> Inddex<'interface> {
             algorithm::send_mail(self.mail.clone(), &msg, &subject).unwrap();
         }
         match self.queue.insert_entry(&mac.to_string()) {
-            Ok(_) => println!("New mac"),
             Err(e) => println!("Error: {}", e),
         }
     }
