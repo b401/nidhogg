@@ -1,4 +1,3 @@
-use chrono::NaiveTime;
 use pnet::util::MacAddr;
 use serde::Deserialize;
 use snafu::ResultExt;
@@ -6,7 +5,6 @@ use std::net::Ipv4Addr;
 use std::path::Path;
 
 mod error;
-
 
 #[derive(Debug, Deserialize)]
 struct ConfigDevice<'a> {
