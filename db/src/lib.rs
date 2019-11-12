@@ -14,7 +14,7 @@ impl DBC {
         let connection = DBC::connect(db_path);
         connection.execute("CREATE TABLE if not exists arp (
             id INTEGER PRIMARY KEY,
-            mac TEXT NOT NULL,
+            mac TEXT UNIQUE NOT NULL ON CONFLICT IGNORE,
             time_created TEXT NOT NULL)",NO_PARAMS).unwrap();
 
 
@@ -33,8 +33,10 @@ impl DBC {
         let mut prepared_statement = self.connection.prepare(
             "INSERT INTO arp (mac, time_created) VALUES (?, ?)",
         )?;
-        prepared_statement.execute(params![param, time::get_time()])?;
-        Ok(())
+        match prepared_statement.execute(params![param, time::get_time()]) {
+            Ok(_) => Ok(()),
+            Err(_) => Ok(()), //ignore constraint errors
+        }
     }
 
     pub fn get_entry(&self) -> Option<Vec<String>> {
@@ -51,7 +53,6 @@ impl DBC {
             addresses.push(mac.unwrap());
         }
 
-        dbg!(&addresses);
         if addresses.len() != 0 {
             Some(addresses)
         } else {
