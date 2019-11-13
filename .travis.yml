@@ -2,3 +2,4 @@ os: linux
 language: rust
 before_install:
   - sudo apt update && sudo apt-get -y install libsqlite3-0 libpcap-dev nmap
+  - ln -s /usr/lib/x86_64-linux-gnu/libpcap.so.1.9.1 /usr/lib/x86_64-linux-gnu/libpcap.so.1
