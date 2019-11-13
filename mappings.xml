@@ -3,7 +3,7 @@
         {
             "hostname": "artoria",
             "id": "i-0",
-            "ips": ["10.62.119.79"],
+            "ips": ["10.2.1.121"],
             "name": "artoria",
             "portspec": "artoria"
         }
