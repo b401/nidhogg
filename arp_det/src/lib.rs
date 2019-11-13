@@ -178,6 +178,7 @@ impl<'interface> Inddex<'interface> {
             algorithm::send_mail(self.mail.clone(), &msg, &subject).unwrap();
         }
         match self.queue.insert_entry(&mac.to_string()) {
+            Ok(_) => (),
             Err(e) => println!("Error: {}", e),
         }
     }
