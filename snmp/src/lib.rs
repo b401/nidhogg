@@ -1,4 +1,4 @@
-use snmp::SyncSession;
+use snmp_real::SyncSession;
 
 pub struct SnmpObject {
     session: SyncSession,
@@ -22,7 +22,7 @@ impl SnmpObject {
         }
     }
 
-    pub fn get(&mut self, oid: String) -> Result<String, snmp::SnmpError> {
+    pub fn get(&mut self, oid: String) -> Result<String, snmp_real::SnmpError> {
         let oid: Box<[u32]> = oid
             .split_terminator('.')
             .map(|x| x.parse::<u32>().unwrap())
@@ -31,11 +31,11 @@ impl SnmpObject {
 
         match self.session.get(&oid) {
             Ok(mut response) => {
-                if let Some((_oid, snmp::Value::OctetString(sys_descr))) = response.varbinds.next()
+                if let Some((_oid, snmp_real::Value::OctetString(sys_descr))) = response.varbinds.next()
                 {
                     Ok(String::from_utf8_lossy(sys_descr).to_string())
                 } else {
-                    Err(snmp::SnmpError::ReceiveError)
+                    Err(snmp_real::SnmpError::ReceiveError)
                 }
             }
             Err(e) => Err(e),
@@ -43,11 +43,3 @@ impl SnmpObject {
     }
 }
 
-/*
- * Example
-let mut sysinfo = snmp::SnmpObject::new(settings.snmp.server, settings.snmp.community);
-    match sysinfo.get(settings.snmp.oid) {
-        Ok(o) => println!("{}", o),
-        Err(e) => eprintln!("{:?}", e),
-    };
- */
