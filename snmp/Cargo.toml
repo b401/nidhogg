@@ -7,5 +7,4 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-snmp_real = { package = "snmp", version = "0.2.2" }
-
+snmp = "0.2.2"
