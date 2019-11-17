@@ -28,6 +28,8 @@ custom_derive! {
     enum Sensor {
         Network,
         Ping,
+        HTTP,
+        Port,
         Load,
         Memory,
         Disk,
@@ -72,7 +74,7 @@ pub fn sensor_changed(
     let sensor: Sensor = info.sensor.parse().unwrap_or(Sensor::Unknown);
     match sensor {
         // network
-        Sensor::Network | Sensor::Ping => {
+        Sensor::Network | Sensor::Ping | Sensor::HTTP Sensor::Port => {
             let mut msg = format!(
                 "Host: {} changed sensor: {} to state: {}\nPlease investigate!\n\n",
                 info.host, info.sensor, info.state
