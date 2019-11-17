@@ -11,15 +11,19 @@ path = "src/main.rs"
 [package.metadata.deb]
 maintainer = "Ives Schneider <ives.schneider@i-401.xyz>"
 depends = "libpcap0.8,nmap, curl, libsqlite3-0"
+extended-description = "Nidhogg debian installer"
 assets = [
-	["/home/buuky/repo/nidhogg/target/debug/nidhogg", "/usr/bin/", "700"],
-	["/home/buuky/repo/nidhogg/config.yml", "/etc/nidhogg/", "700"],
-	["/home/buuky/repo/nidhogg/mappings.xml", "/etc/nidhogg/", "700"],
-	["/home/buuky/repo/nidhogg/portspecs.yml", "/etc/nidhogg/", "700"],
-	["/home/buuky/repo/nidhogg/static/css/*", "/etc/nidhogg/static/css", "700"],
-	["/home/buuky/repo/nidhogg/static/images/*", "/etc/nidhogg/static/images", "700"],
-	["/home/buuky/repo/nidhogg/web/templates/*", "/etc/nidhogg/templates/", "700"],
+	["/home/buuky/Repos/nidhogg/target/release/nidhogg", "/usr/bin/", "700"],
+	["/home/buuky/Repos/nidhogg/config.yml", "/etc/nidhogg/", "700"],
+	["/home/buuky/Repos/nidhogg/mappings.xml", "/etc/nidhogg/", "700"],
+	["/home/buuky/Repos/nidhogg/portspecs.yml", "/etc/nidhogg/", "700"],
+	["/home/buuky/Repos/nidhogg/static/css/*", "/etc/nidhogg/static/css", "700"],
+	["/home/buuky/Repos/nidhogg/static/images/*", "/etc/nidhogg/static/images", "700"],
+	["/home/buuky/Repos/nidhogg/web/templates/*", "/etc/nidhogg/templates/", "700"],
+	["/home/buuky/Repos/nidhogg/nidhogg.service", "/etc/systemd/system/", "700"],
 ]
+copyright = "2019, Ives Schneider"
+license-file = [ "../LICENSE", "2" ]
 
 
 [dependencies]

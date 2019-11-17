@@ -34,16 +34,16 @@ snmp:
 # Enable/disable portscanning (requires root rights)
 portscan:
     enable: true
-    portspec: "~/Repos/nidhogg/portspecs.yml"
-    mappings: "~/Repos/nidhogg/mappings.xml"
+    portspec: "/etc/nidhogg/portspecs.yml"
+    mappings: "/etc/nidhogg/mappings.xml"
     timeout: 500
 
 # Enable/disable arpscanning (requires root rights)
 # Use mac list to whitelist devices. (You won't get notifications if those devices getting connected)
 arpscan:
     enable: true
-    interface: "eno1"
-    db: "/tmp/arp.db"
+    interface: "eth0"
+    db: "/etc/nidhogg/arp.db"
     timeout: 500
     mac:
       - "00:17:88:28:9f:ca"
