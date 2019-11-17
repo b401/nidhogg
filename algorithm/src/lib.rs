@@ -8,7 +8,6 @@ use config;
 use lettre::smtp::{authentication, SmtpClient};
 use lettre::Transport;
 use lettre_email::EmailBuilder;
-use log::{error, warn};
 use scanner;
 use splunk;
 use std::thread;
@@ -71,7 +70,11 @@ pub fn sensor_changed(
     mail: std::sync::Arc<config::Mail>,
     scan: std::sync::Arc<config::Portscan>,
 ) {
-    let sensor: Sensor = info.sensor.parse().unwrap_or(Sensor::Unknown);
+    let sensor: Sensor = info
+        .sensor
+        .to_lowercase()
+        .parse()
+        .unwrap_or(Sensor::Unknown);
     match sensor {
         // network
         Sensor::Network | Sensor::Ping | Sensor::HTTP | Sensor::Port => {
@@ -79,8 +82,6 @@ pub fn sensor_changed(
                 "Host: {} changed sensor: {} to state: {}\nPlease investigate!\n\n",
                 info.host, info.sensor, info.state
             );
-
-            warn!("{}", msg);
 
             match scanner::run(Some(&info.host), &scan) {
                 Ok(res) => {
@@ -108,10 +109,6 @@ pub fn sensor_changed(
                 None => String::new(),
             };
 
-            warn!(
-                "Host: {} , Sensor: {}, State: {}",
-                info.host, info.state, info.sensor
-            );
             send_mail(
                 mail,
                 &format!(
@@ -124,7 +121,7 @@ pub fn sensor_changed(
         }
         // Unknown
         Sensor::Unknown => {
-            error!(
+            println!(
                 "[Unknown] Host: {} , Sensor: {}, State: {}",
                 info.host, info.state, info.sensor
             );

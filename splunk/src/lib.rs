@@ -99,7 +99,7 @@ impl<'user, 'pass> Rest {
     pub fn check_sudo(&mut self, host: &String) -> Option<SearchResult> {
         let method = METHOD::SEARCH("/services/search/jobs/export".to_owned());
         let mut query = vec![format!(
-            r#"search=search process="sudo" host="{}" source="/var/log/auth.log" | head 1"#,
+            r#"search=search process="sudo" host="{}" sourcetype="linux_secure" | head 1"#,
             host
         )];
         query.push("output_mode=json".to_owned());

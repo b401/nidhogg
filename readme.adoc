@@ -1,6 +1,6 @@
 = Nidhogg
 
-image:https://travis-ci.com/b401/nidhogg.svg?token=6gTSkczsYnrhtpzNCLcZ&branch=master["Build Status", link="https://travis-ci.com/b401/nidhogg"]
+image:https://travis-ci.com/b401/nidhogg.svg?token=6gTSkczsYnrhtpzNCLcZ&branch=master["Build Status", link="https://travis-ci.com/b401/nidhogg",align="center"]
 
 == Info
 If you're planning to run nidhogg with it's scanning capability, you won't get around to sadly run it as root. (or with cap rights) +
@@ -43,19 +43,42 @@ WARNING: All configflags are mandatory
 See examples for more indepth settings.
 
 
+=== Main configuration file
+Defines most configuration aspects of nidhogg. +
+All config flags are mandatory but every functionality can be disabled.
+
 .config.yml
-Main configuration file. +
+[source,yaml]
+----
+include::src/config.yml[]
+----
+
+=== Portscan configuration files
+Defines which target and which ports should be in a special state. +
+If a port is undefined, it will be ignored in the final report. +
+
+mappings.xml is used to bind a spec to a target.
+
+Special thanks to https://github.com/lukaspustina/nmap-analyze[nmap-analyze]
 
 .portspecs.yml
-Set ports to monitor
+[source,yaml]
+----
+include::src/portspecs.yml[]
+----
 
 .mappings.xml
-Map portspecs to hosts.
+[source,yaml]
+----
+include::src/mappings.xml[]
+----
 
-== Deinstallation
+== Uninstall
+Uninstalling is as easy as installing. +
+If you've installed nidhogg via .deb, just remove the deb with apt. +
 
 .Ubuntu / apt based
 ``apt remove nidhogg``
 
-.Compiled from source
+.Compiled from source / Binary
 ``rm -r /etc/nidhogg && rm /usr/bin/nidhogg``

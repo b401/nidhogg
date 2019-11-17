@@ -38,7 +38,6 @@ fn logout(id: Identity) -> HttpResponse {
 /// Url: ${hostname}/network
 #[get("/sensor/{host}/{sensor}/{state}")]
 fn sensor(path: web::Path<algorithm::Prtg>, data: web::Data<Data>) -> Result<String> {
-    println!("Got somethin new!");
     algorithm::sensor_changed(
         &*path,
         data.splunk.clone(),
