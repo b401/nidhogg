@@ -1,6 +1,9 @@
 = Nidhogg
 
-image:https://travis-ci.com/b401/nidhogg.svg?token=6gTSkczsYnrhtpzNCLcZ&branch=master["Build Status", link="https://travis-ci.com/b401/nidhogg",align="center"]
+image:static/images/dragon.svg["Nidhogg",width=100px,align=center]
+
+image:https://travis-ci.com/b401/nidhogg.svg?token=6gTSkczsYnrhtpzNCLcZ&branch=master["Build Status",align=center, link="https://travis-ci.com/b401/nidhogg"]
+
 
 == Info
 If you're planning to run nidhogg with it's scanning capability, you won't get around to sadly run it as root. (or with cap rights) +
