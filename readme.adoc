@@ -53,7 +53,7 @@ All config flags are mandatory but every functionality can be disabled.
 .config.yml
 [source,yaml]
 ----
-include::src/config.yml[]
+include::config.yml[]
 ----
 
 === Portscan configuration files
@@ -67,13 +67,13 @@ Special thanks to https://github.com/lukaspustina/nmap-analyze[nmap-analyze]
 .portspecs.yml
 [source,yaml]
 ----
-include::src/portspecs.yml[]
+include::portspecs.yml[]
 ----
 
 .mappings.xml
 [source,yaml]
 ----
-include::src/mappings.xml[]
+include::mappings.xml[]
 ----
 
 == Uninstall
