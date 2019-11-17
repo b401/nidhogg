@@ -50,11 +50,7 @@ See examples for more indepth settings.
 Defines most configuration aspects of nidhogg. +
 All config flags are mandatory but every functionality can be disabled.
 
-.config.yml
-[source,yaml]
-----
-include::config.yml[]
-----
+https://github.com/b401/nidhogg/blob/master/config.yml[config.yml]
 
 === Portscan configuration files
 Defines which target and which ports should be in a special state. +
@@ -64,17 +60,9 @@ mappings.xml is used to bind a spec to a target.
 
 Special thanks to https://github.com/lukaspustina/nmap-analyze[nmap-analyze]
 
-.portspecs.yml
-[source,yaml]
-----
-include::portspecs.yml[]
-----
+https://github.com/b401/nidhogg/blob/master/portspecs.yml[portspecs.yml]
 
-.mappings.xml
-[source,yaml]
-----
-include::mappings.xml[]
-----
+https://github.com/b401/nidhogg/blob/master/mappings.xml[mappings.xml]
 
 == Uninstall
 Uninstalling is as easy as installing. +
