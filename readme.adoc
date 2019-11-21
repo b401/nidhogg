@@ -39,8 +39,8 @@ https://hub.docker.com/r/b401/nidhogg
 
 .Docker
 https://hub.docker.com/r/b401/nidhogg
-
-Run with   docker run -it --net=host --privileged -v /config.yml:/etc/nidhogg/config.yml -v mappings.xml:/etc/nidhogg/mappings.xml -v portspecs.yml:/etc/nidhogg/portspecs.yml b401/nidhogg:final  
+ 
+``docker run -it --net=host --privileged -v /config.yml:/etc/nidhogg/config.yml -v mappings.xml:/etc/nidhogg/mappings.xml -v portspecs.yml:/etc/nidhogg/portspecs.yml b401/nidhogg:final``
 
 == Configuration
 WARNING: All configflags are mandatory
